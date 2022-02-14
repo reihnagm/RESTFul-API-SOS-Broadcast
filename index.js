@@ -43,7 +43,7 @@ app.post("/upload", upload.single("video"), (req, res) => {
   if(req.file) {
     filename = req.file.originalname
     res.json({
-      "url": `http://192.168.113.73:3000/public/videos/${filename}`
+      "url": `http://cxid.xyz:3000/public/videos/${filename}`
     })
   } else {
     res.json({
