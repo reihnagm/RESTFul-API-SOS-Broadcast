@@ -99,7 +99,7 @@ app.post("/upload", upload.single("video"), (req, res) => {
 
 function fetchFcm () {
   return new Promise((resolve, reject) => {
-    const query = `SELECT fcm_secret FROM fcm WHERE uid = origin`
+    const query = `SELECT fcm_secret FROM fcm WHERE uid = 'origin'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
