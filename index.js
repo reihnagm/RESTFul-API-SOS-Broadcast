@@ -67,7 +67,7 @@ app.get("/fetch-sos", async (req, res) => {
   }
 })
 
-app.get("/insert-sos", async (req, res) => {
+app.post("/insert-sos", async (req, res) => {
   try {
     let uid = req.body.uid
     let media_url = req.body.media_url
