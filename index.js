@@ -56,6 +56,35 @@ app.use(express.static("public"))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+app.get("/fetch-sos", async (req, res) => {
+  try {
+    let sos = await fetchSos()
+    return res.json({
+      "data": sos
+    })
+  } catch(e) {
+    console.log(e)
+  }
+})
+
+app.get("/insert-sos", async (req, res) => {
+  try {
+    let uid = req.body.uid
+    let media_url = req.body.media_url
+    let desc = req.body.desc
+
+    await insertSos(uid, media_url, desc)
+
+    return res.json({
+      "uid": uid,
+      "media_url": media_url,
+      "desc": desc
+    })
+  } catch(e) {
+    console.log(e)
+  }
+})
+
 app.get("/fetch-fcm", async (req, res) => {
   try {
     const fcmSecret = await fetchFcm()
@@ -96,6 +125,32 @@ app.post("/upload", upload.single("video"), (req, res) => {
     })
   }
 })
+
+function fetchSos() {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM sos ORDER BY created_at DESC`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
+function insertSos (uid, media_url, desc) {
+  return new Promise((resolve, reject) => {
+    const query = `REPLACE INTO sos (uid, media_url, content) VALUES ('${uid}', '${media_url}', '${desc}')`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0])
+      }
+    })
+  })
+}
 
 function fetchFcm () {
   return new Promise((resolve, reject) => {
