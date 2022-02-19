@@ -236,7 +236,7 @@ function insertSos (uid, category, media_url, content, status, lat, lng, address
 
 function fetchFcm () {
   return new Promise((resolve, reject) => {
-    const query = `SELECT fcm_secret FROM fcm`
+    const query = `SELECT * FROM fcm`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
