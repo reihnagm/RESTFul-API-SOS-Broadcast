@@ -69,16 +69,24 @@ app.get("/fetch-sos", async (req, res) => {
 
 app.post("/insert-sos", async (req, res) => {
   try {
-    let uid = req.body.uid
+    let uid = req.body.uid 
+    let category = req.body.category
     let media_url = req.body.media_url
     let desc = req.body.desc
+    let lat = req.body.lat
+    let lng = req.body.lng
+    let status = req.body.status;
 
-    await insertSos(uid, media_url, desc)
+    await insertSos(uid, category, media_url, desc, status, lat, lng)
 
     return res.json({
       "uid": uid,
+      "category": category,
       "media_url": media_url,
-      "desc": desc
+      "desc": desc,
+      "lat": lat,
+      "lng": lng,
+      "status": status
     })
   } catch(e) {
     console.log(e)
@@ -139,9 +147,9 @@ function fetchSos() {
   })
 }
 
-function insertSos (uid, media_url, desc) {
+function insertSos (uid, category, media_url, desc, status, lat, lng) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO sos (uid, media_url, content) VALUES ('${uid}', '${media_url}', '${desc}')`
+    const query = `REPLACE INTO sos (uid, category, media_url, content, lat, lng, status) VALUES ('${uid}',  '${category}', '${media_url}', '${desc}', '${lat}', '${lng}', '${status}')`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
