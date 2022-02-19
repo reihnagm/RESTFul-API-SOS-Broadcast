@@ -8,7 +8,11 @@ const io = require('socket.io')(server)
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
-    callback(null, "./public/videos")
+    if(file.mimetype == "image/jpeg") {
+      callback(null, "./public/thumbnails")
+    } else {
+      callback(null, "./public/videos")
+    }
   },
   filename: (req, file, callback) => {
     callback(null, file.originalname)
@@ -69,7 +73,7 @@ app.get("/fetch-sos", async (req, res) => {
 
 app.post("/insert-sos", async (req, res) => {
   try {
-    let uid = req.body.uid 
+    let id = req.body.id 
     let category = req.body.category
     let media_url = req.body.media_url
     let desc = req.body.desc
@@ -77,13 +81,13 @@ app.post("/insert-sos", async (req, res) => {
     let lng = req.body.lng
     let status = req.body.status;
 
-    await insertSos(uid, category, media_url, desc, status, lat, lng)
+    await insertSos(id, category, media_url, desc, status, lat, lng)
 
     return res.json({
-      "uid": uid,
-      "category": category,
+      "id": id,
+      "content": desc,
       "media_url": media_url,
-      "desc": desc,
+      "category": category,
       "lat": lat,
       "lng": lng,
       "status": status
@@ -134,6 +138,20 @@ app.post("/upload", upload.single("video"), (req, res) => {
   }
 })
 
+app.post("/upload-thumbnail", upload.single("thumbnail"), (req, res) => {
+  let filename
+  if(req.file) {
+    filename = req.file.originalname
+    res.json({
+      "url": `http://cxid.xyz:3000/thumbnails/${filename}`
+    })
+  } else {
+    res.json({
+      "url": ""
+    })
+  }
+})
+
 function fetchSos() {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM sos ORDER BY created_at DESC`
@@ -147,9 +165,9 @@ function fetchSos() {
   })
 }
 
-function insertSos (uid, category, media_url, desc, status, lat, lng) {
+function insertSos (uid, category, media_url, content, status, lat, lng) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO sos (uid, category, media_url, content, lat, lng, status) VALUES ('${uid}',  '${category}', '${media_url}', '${desc}', '${lat}', '${lng}', '${status}')`
+    const query = `REPLACE INTO sos (uid, category, media_url, content, lat, lng, status) VALUES ('${uid}',  '${category}', '${media_url}', '${content}', '${lat}', '${lng}', '${status}')`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
