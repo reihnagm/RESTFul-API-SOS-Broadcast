@@ -79,9 +79,11 @@ app.post("/insert-sos", async (req, res) => {
     let desc = req.body.desc
     let lat = req.body.lat
     let lng = req.body.lng
-    let status = req.body.status;
+    let status = req.body.status
+    let duration = req.body.duration
+    let thumbnail = req.body.thumbnail
 
-    await insertSos(id, category, media_url, desc, status, lat, lng)
+    await insertSos(id, category, media_url, desc, status, lat, lng, duration, thumbnail)
 
     return res.json({
       "id": id,
@@ -90,7 +92,9 @@ app.post("/insert-sos", async (req, res) => {
       "category": category,
       "lat": lat,
       "lng": lng,
-      "status": status
+      "status": status,
+      "duration": duration,
+      "thumbnail": thumbnail
     })
   } catch(e) {
     console.log(e)
@@ -165,9 +169,10 @@ function fetchSos() {
   })
 }
 
-function insertSos (uid, category, media_url, content, status, lat, lng) {
+function insertSos (uid, category, media_url, content, status, lat, lng, duration, thumbnail) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO sos (uid, category, media_url, content, lat, lng, status) VALUES ('${uid}',  '${category}', '${media_url}', '${content}', '${lat}', '${lng}', '${status}')`
+    const query = `REPLACE INTO sos (uid, category, media_url, content, lat, lng, status, duration, thumbnail) 
+    VALUES ('${uid}',  '${category}', '${media_url}', '${content}', '${lat}', '${lng}', '${status}', '${duration}', '${thumbnail}')`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
