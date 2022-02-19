@@ -178,8 +178,23 @@ app.post("/upload-thumbnail", upload.single("thumbnail"), (req, res) => {
 
 function fetchSos(offset, limit) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT uid, category, media_url, content, lat, lng, address, status, duration, thumbnail, user_id, created_at, updated_at 
-    FROM sos LIMIT ${offset}, ${limit}`
+    const query = `SELECT a.uid, 
+    a.category, 
+    a.media_url, 
+    a.content, 
+    a.lat, 
+    a.lng, 
+    a.address, 
+    a.status, 
+    a.duration, 
+    a.thumbnail, 
+    a.user_id, 
+    a.created_at, 
+    a.updated_at, 
+    b.fullname
+    FROM sos a 
+    INNER JOIN users b ON a.user_id = b.user_id 
+    LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
