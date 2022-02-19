@@ -194,7 +194,7 @@ function fetchSos(offset, limit) {
     b.fullname
     FROM sos a 
     INNER JOIN users b ON a.user_id = b.user_id 
-    LIMIT ${offset}, ${limit}`
+    ORDER BY a.created_at DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
