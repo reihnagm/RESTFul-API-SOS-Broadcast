@@ -236,7 +236,7 @@ function insertSos (uid, category, media_url, content, status, lat, lng, address
 
 function fetchFcm () {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM fcm`
+    const query = `SELECT a.*, b.fullname FROM fcm a INNER JOIN users b ON a.uid = b.user_id`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
