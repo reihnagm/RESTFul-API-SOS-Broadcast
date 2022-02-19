@@ -241,7 +241,7 @@ function fetchFcm () {
       if(e) {
         reject(new Error(e))
       } else {
-        resolve(res[0].fcm_secret)
+        resolve(res)
       }
     })
   })
