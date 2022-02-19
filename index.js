@@ -125,7 +125,7 @@ app.get("/fetch-fcm", async (req, res) => {
   try {
     const fcmSecret = await fetchFcm()
     return res.json({
-      "fcm_secret": fcmSecret
+      "data": fcmSecret
     })
   } catch(e) {
     console.log(e)
