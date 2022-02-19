@@ -133,12 +133,14 @@ app.get("/fetch-fcm", async (req, res) => {
 })
 
 app.post("/init-fcm", async (req, res) => {
+  let userId = req.body.user_id
   let fcmSecret = req.body.fcm_secret
   let lat = req.body.lat
   let lng = req.body.lng
   try {
-    await initFcm("origin", fcmSecret, lat, lng)
+    await initFcm(userId, fcmSecret, lat, lng)
     return res.json({
+      "user_id": userId,
       "fcm_secret": fcmSecret,
       "lat": lat,
       "lng": lng
@@ -234,7 +236,7 @@ function insertSos (uid, category, media_url, content, status, lat, lng, address
 
 function fetchFcm () {
   return new Promise((resolve, reject) => {
-    const query = `SELECT fcm_secret FROM fcm WHERE uid = 'origin'`
+    const query = `SELECT fcm_secret FROM fcm`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
