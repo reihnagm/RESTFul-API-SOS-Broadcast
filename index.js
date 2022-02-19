@@ -147,7 +147,7 @@ app.post("/upload-thumbnail", upload.single("thumbnail"), (req, res) => {
   if(req.file) {
     filename = req.file.originalname
     res.json({
-      "url": `http://cxid.xyz:3000/thumbnails/${filename}`
+      "url": `http://cxid.xyz:3000/videos/${filename}`
     })
   } else {
     res.json({
