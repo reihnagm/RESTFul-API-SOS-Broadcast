@@ -61,10 +61,26 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.get("/fetch-sos", async (req, res) => {
+  let page = parseInt(req.query.page) || 1
+  let show = parseInt(req.query.show) || 20  
+  let offset  = (page - 1) * show
+  let total = await fetchSosTotal()
+  let resultTotal = Math.ceil(total / show) 
+  let perPage = Math.ceil(resultTotal / show) 
+  let prevPage = page === 1 ? 1 : page - 1
+  let nextPage = page === perPage ? 1 : page + 1
+ 
   try {
-    let sos = await fetchSos()
+    let sos = await fetchSos(offset, show)
     return res.json({
-      "data": sos
+      "data": sos,
+      "total": total,
+      "perPage": perPage,
+      "nextPage": nextPage,
+      "prevPage": prevPage,
+      "currentPage": page,
+      "nextUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
+      "prevUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
     })
   } catch(e) {
     console.log(e)
@@ -160,14 +176,28 @@ app.post("/upload-thumbnail", upload.single("thumbnail"), (req, res) => {
   }
 })
 
-function fetchSos() {
+function fetchSos(offset, limit) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM sos ORDER BY created_at DESC`
+    const query = `SELECT uid, category, media_url, content, lat, lng, address, status, duration, thumbnail, user_id, created_at, updated_at 
+    FROM sos LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
       } else {
         resolve(res)
+      }
+    })
+  })
+}
+
+function fetchSosTotal() {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT COUNT(*) AS total FROM sos`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0].total)
       }
     })
   })
