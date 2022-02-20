@@ -155,8 +155,9 @@ app.post("/inboxes/create", async (req, res) => {
   let uid = req.body.uid 
   let title = req.body.title
   let content = req.body.content
+  let userId = req.body.userId
   
-  await inboxesStore(uid, title, content)
+  await inboxesStore(uid, title, content, userId)
 
   res.json({
     "status": res.statusCode,
@@ -173,7 +174,7 @@ app.put("/inboxes/update/:uid", async (req, res) => {
   })
 });
 
-app.get("/inboxes", async (req, res) => {
+app.get("/inboxes/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
   let show = parseInt(req.query.show) || 30  
   let offset  = (page - 1) * show
@@ -184,7 +185,8 @@ app.get("/inboxes", async (req, res) => {
   let nextPage = page === perPage ? 1 : page + 1
  
   try {
-    let inboxes = await fetchInboxes(offset, show)
+    let userId = req.params.user_id
+    let inboxes = await fetchInboxes(offset, show, userId)
     let inboxesAssign = [];
     for (let i = 0; i < inboxes.length; i++) {
       inboxesAssign.push({
@@ -283,9 +285,9 @@ function fetchTotalInboxesUnread() {
   })
 }
 
-function fetchInboxes(offset, limit) {
+function fetchInboxes(offset, limit, userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM inboxes LIMIT ${offset}, ${limit}`
+    const query = `SELECT * FROM inboxes WHERE user_id = '${userId}' LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
@@ -323,10 +325,10 @@ function fetchInboxesTotal() {
   })
 }
 
-function inboxesStore (uid, title, content) {
+function inboxesStore (uid, title, content, userId) {
   return new Promise((resolve, reject) => {
     const query = `REPLACE INTO inboxes (uid, title, content, is_read) 
-    VALUES ('${uid}', '${title}', '${content}', 0)`
+    VALUES ('${uid}', '${title}', '${content}', 0, '${userId}')`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
