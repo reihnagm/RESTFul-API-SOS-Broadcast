@@ -1,6 +1,7 @@
 const express = require("express")
 const cors = require("cors")
 const app = express()
+const moment = require("moment")
 const mysql = require('mysql')
 const multer = require('multer')
 const server = require('http').createServer(app)
@@ -62,7 +63,7 @@ app.use(express.urlencoded({ extended: true }))
 
 app.get("/fetch-sos", async (req, res) => {
   let page = parseInt(req.query.page) || 1
-  let show = parseInt(req.query.show) || 20  
+  let show = parseInt(req.query.show) || 30  
   let offset  = (page - 1) * show
   let total = await fetchSosTotal()
   let resultTotal = Math.ceil(total / show) 
@@ -150,6 +151,67 @@ app.post("/init-fcm", async (req, res) => {
   }
 })
 
+app.post("/inboxes/create", async (req, res) => {
+  let uid = req.body.uid 
+  let title = req.body.title
+  let content = req.body.content
+  
+  await inboxesStore(uid, title, content)
+
+  res.json({
+    "status": res.statusCode,
+  })
+});
+
+app.put("/inboxes/update/:uid", async (req, res) => {
+  let uid = req.params.uid 
+  
+  await inboxesUpdate(uid, 1)
+
+  res.json({
+    "status": res.statusCode,
+  })
+});
+
+app.get("/inboxes", async (req, res) => {
+  let page = parseInt(req.query.page) || 1
+  let show = parseInt(req.query.show) || 30  
+  let offset  = (page - 1) * show
+  let total = await fetchInboxesTotal()
+  let resultTotal = Math.ceil(total / show) 
+  let perPage = Math.ceil(resultTotal / show) 
+  let prevPage = page === 1 ? 1 : page - 1
+  let nextPage = page === perPage ? 1 : page + 1
+ 
+  try {
+    let inboxes = await fetchInboxes(offset, show)
+    let inboxesAssign = [];
+    for (let i = 0; i < inboxes.length; i++) {
+      inboxesAssign.push({
+        "uid": inboxes[i].uid,
+        "title": inboxes[i].title,
+        "content": inboxes[i].content,
+        "created_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss a'),
+        "updated_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss a')
+      })
+    }
+    let totalUnread =  await fetchTotalInboxesUnread();
+    return res.json({
+      "data": inboxesAssign,
+      "total_unread": totalUnread.length,
+      "total": total,
+      "perPage": perPage,
+      "nextPage": nextPage,
+      "prevPage": prevPage,
+      "currentPage": page,
+      "nextUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
+      "prevUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
+    })
+  } catch(e) {
+    console.log(e)
+  }
+});
+
 app.post("/upload", upload.single("video"), (req, res) => {
   let filename
   if(req.file) {
@@ -207,6 +269,32 @@ function fetchSos(offset, limit) {
   })
 }
 
+function fetchTotalInboxesUnread() {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM inboxes WHERE is_read = 0`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
+function fetchInboxes(offset, limit) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM inboxes LIMIT ${offset}, ${limit}`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
 function fetchSosTotal() {
   return new Promise((resolve, reject) => {
     const query = `SELECT COUNT(*) AS total FROM sos`
@@ -215,6 +303,47 @@ function fetchSosTotal() {
         reject(new Error(e))
       } else {
         resolve(res[0].total)
+      }
+    })
+  })
+}
+
+
+function fetchInboxesTotal() {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT COUNT(*) AS total FROM inboxes`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0].total)
+      }
+    })
+  })
+}
+
+function inboxesStore (uid, title, content) {
+  return new Promise((resolve, reject) => {
+    const query = `REPLACE INTO inboxes (uid, title, content, is_read) 
+    VALUES ('${uid}', '${title}', '${content}', 0)`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0])
+      }
+    })
+  })
+}
+
+function inboxesUpdate(uid) {
+  return new Promise((resolve, reject) => {
+    const query = `UPDATE inboxes SET is_read = 1 WHERE uid = '${uid}'`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0])
       }
     })
   })
