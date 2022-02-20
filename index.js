@@ -189,6 +189,7 @@ app.get("/inboxes", async (req, res) => {
     for (let i = 0; i < inboxes.length; i++) {
       inboxesAssign.push({
         "uid": inboxes[i].uid,
+        "is_read": inboxes[i].is_read,
         "title": inboxes[i].title,
         "content": inboxes[i].content,
         "created_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss a'),
