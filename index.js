@@ -155,12 +155,12 @@ app.post("/inboxes/create", async (req, res) => {
   let uid = req.body.uid 
   let title = req.body.title
   let content = req.body.content
-  let userId = req.body.userId
+  let userId = req.body.user_id
   
   await inboxesStore(uid, title, content, userId)
 
   res.json({
-    "status": res.statusCode,
+    "status": res.statusCode
   })
 });
 
@@ -170,7 +170,7 @@ app.put("/inboxes/update/:uid", async (req, res) => {
   await inboxesUpdate(uid, 1)
 
   res.json({
-    "status": res.statusCode,
+    "status": res.statusCode
   })
 });
 
@@ -327,7 +327,7 @@ function fetchInboxesTotal() {
 
 function inboxesStore (uid, title, content, userId) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO inboxes (uid, title, content, is_read) 
+    const query = `REPLACE INTO inboxes (uid, title, content, is_read, user_id) 
     VALUES ('${uid}', '${title}', '${content}', 0, '${userId}')`
     conn.query(query, (e, res) => {
       if(e) {
