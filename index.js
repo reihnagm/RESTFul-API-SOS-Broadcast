@@ -61,7 +61,7 @@ app.use(express.static("public"))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-app.get("/fetch-sos", async (req, res) => {
+app.get("/fetch-sos/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
   let show = parseInt(req.query.show) || 30  
   let offset  = (page - 1) * show
@@ -72,7 +72,8 @@ app.get("/fetch-sos", async (req, res) => {
   let nextPage = page === perPage ? 1 : page + 1
  
   try {
-    let sos = await fetchSos(offset, show)
+    let userId = req.params.user_id
+    let sos = await fetchSos(offset, show, userId)
     return res.json({
       "data": sos,
       "total": total,
@@ -243,7 +244,7 @@ app.post("/upload-thumbnail", upload.single("thumbnail"), (req, res) => {
   }
 })
 
-function fetchSos(offset, limit) {
+function fetchSos(offset, limit, userId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT a.uid, 
     a.category, 
@@ -255,12 +256,12 @@ function fetchSos(offset, limit) {
     a.address, 
     a.status, 
     a.duration, 
-    a.user_id, 
     a.created_at, 
     a.updated_at, 
     b.fullname
     FROM sos a 
     INNER JOIN users b ON a.user_id = b.user_id 
+    WHERE a.user_id = '${userId}'
     ORDER BY a.created_at DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
