@@ -212,7 +212,7 @@ app.get("/inboxes/:user_id", async (req, res) => {
         "updated_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss a')
       })
     }
-    let totalUnread =  await fetchTotalInboxesUnread();
+    let totalUnread =  await fetchTotalInboxesUnread(userId);
     return res.json({
       "data": inboxesAssign,
       "total_unread": totalUnread.length,
@@ -314,9 +314,9 @@ function fetchAllSos(offset, limit) {
   })
 }
 
-function fetchTotalInboxesUnread() {
+function fetchTotalInboxesUnread(userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM inboxes WHERE is_read = 0`
+    const query = `SELECT * FROM inboxes WHERE is_read = 0 WHERE user_id = '${userId}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
