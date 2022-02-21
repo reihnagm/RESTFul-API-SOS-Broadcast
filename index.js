@@ -70,10 +70,25 @@ app.get("/fetch-sos/:user_id", async (req, res) => {
   let perPage = Math.ceil(resultTotal / show) 
   let prevPage = page === 1 ? 1 : page - 1
   let nextPage = page === perPage ? 1 : page + 1
- 
-  try {
-    let userId = req.params.user_id
-    let sos = await fetchSos(offset, show, userId)
+  if(req.params.user_id != "all") {
+    try {
+      let userId = req.params.user_id
+      let sos = await fetchSos(offset, show, userId)
+      return res.json({
+        "data": sos,
+        "total": total,
+        "perPage": perPage,
+        "nextPage": nextPage,
+        "prevPage": prevPage,
+        "currentPage": page,
+        "nextUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
+        "prevUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
+      })
+    } catch(e) {
+      console.log(e)
+    }
+  } else {
+    let sos = await fetchAllSos(offset, show)
     return res.json({
       "data": sos,
       "total": total,
@@ -84,8 +99,6 @@ app.get("/fetch-sos/:user_id", async (req, res) => {
       "nextUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
       "prevUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
     })
-  } catch(e) {
-    console.log(e)
   }
 })
 
@@ -262,6 +275,34 @@ function fetchSos(offset, limit, userId) {
     FROM sos a 
     INNER JOIN users b ON a.user_id = b.user_id 
     WHERE a.user_id = '${userId}'
+    ORDER BY a.created_at DESC LIMIT ${offset}, ${limit}`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
+function fetchAllSos(offset, limit) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT a.uid, 
+    a.category, 
+    a.media_url, 
+    a.thumbnail, 
+    a.content, 
+    a.lat, 
+    a.lng, 
+    a.address, 
+    a.status, 
+    a.duration, 
+    a.created_at, 
+    a.updated_at, 
+    b.fullname
+    FROM sos a 
+    INNER JOIN users b ON a.user_id = b.user_id 
     ORDER BY a.created_at DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
