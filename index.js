@@ -344,7 +344,7 @@ function fetchAllSos(offset, limit) {
 
 function fetchTotalInboxesUnread(userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM inboxes WHERE is_read = 0 WHERE user_id = '${userId}'`
+    const query = `SELECT * FROM inboxes WHERE is_read = 0 AND user_id = '${userId}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
@@ -357,7 +357,7 @@ function fetchTotalInboxesUnread(userId) {
 
 function fetchInboxes(offset, limit, userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM inboxes WHERE user_id = '${userId}' LIMIT ${offset}, ${limit}`
+    const query = `SELECT * FROM inboxes WHERE user_id='${userId}' LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
