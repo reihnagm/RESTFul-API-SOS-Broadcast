@@ -30,7 +30,7 @@ let conn = mysql.createConnection({
   port: '3307',
   password:'cx2021!',
   database: 'sos'
-});
+})
 
 conn.connect(function(e) {
   if (e) {
@@ -176,7 +176,7 @@ app.post("/inboxes/create", async (req, res) => {
   res.json({
     "status": res.statusCode
   })
-});
+})
 
 app.put("/inboxes/update/:uid", async (req, res) => {
   let uid = req.params.uid 
@@ -186,7 +186,27 @@ app.put("/inboxes/update/:uid", async (req, res) => {
   res.json({
     "status": res.statusCode
   })
-});
+})
+
+app.get("/contacts", async (req, res) => {
+  let data = await fetchContact()
+  res.json({
+    "data": data
+  })
+}) 
+
+app.post("/contacts/create", async (req, res) => {
+  let uid = req.body.uid
+  let name = req.body.name
+  let identifier = req.body.identifier
+  let userId = req.body.user_id
+
+  await insertContact(uid, name, identifier, userId)
+
+  res.json({
+    "status": res.statusCode
+  })
+}) 
 
 app.get("/inboxes/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
@@ -353,7 +373,6 @@ function fetchSosTotal() {
   })
 }
 
-
 function fetchInboxesTotal() {
   return new Promise((resolve, reject) => {
     const query = `SELECT COUNT(*) AS total FROM inboxes`
@@ -367,7 +386,7 @@ function fetchInboxesTotal() {
   })
 }
 
-function inboxesStore (uid, title, content, userId) {
+function inboxesStore(uid, title, content, userId) {
   return new Promise((resolve, reject) => {
     const query = `REPLACE INTO inboxes (uid, title, content, is_read, user_id) 
     VALUES ('${uid}', '${title}', '${content}', 0, '${userId}')`
@@ -394,7 +413,7 @@ function inboxesUpdate(uid) {
   })
 }
 
-function insertSos (uid, category, media_url, content, status, lat, lng, address, duration, thumbnail, userId) {
+function insertSos(uid, category, media_url, content, status, lat, lng, address, duration, thumbnail, userId) {
   return new Promise((resolve, reject) => {
     const query = `REPLACE INTO sos (uid, category, media_url, content, lat, lng, address, status, duration, thumbnail, user_id) 
     VALUES ('${uid}',  '${category}', '${media_url}', '${content}', '${lat}', '${lng}', '${address}', '${status}', '${duration}', '${thumbnail}', '${userId}')`
@@ -408,7 +427,34 @@ function insertSos (uid, category, media_url, content, status, lat, lng, address
   })
 }
 
-function fetchFcm () {
+function fetchContact() {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM contacts`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
+function insertContact(uid, name, identifier, userId) {
+  return new Promise((resolve, reject) => {
+    const query = `REPLACE INTO contacts (uid, name, identifier, user_id)  
+    VALUES('${uid}', '${name}', '${identifier}', '${userId}')`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0])
+      }
+    })
+  })
+}
+
+function fetchFcm() {
   return new Promise((resolve, reject) => {
     const query = `SELECT a.*, b.fullname FROM fcm a INNER JOIN users b ON a.uid = b.user_id`
     conn.query(query, (e, res) => {
@@ -421,7 +467,7 @@ function fetchFcm () {
   })
 }
 
-function initFcm (uid, fcmSecret, lat, lng) {
+function initFcm(uid, fcmSecret, lat, lng) {
   return new Promise((resolve, reject) => {
     const query = `REPLACE INTO fcm (uid, fcm_secret, lat, lng) VALUES ('${uid}', '${fcmSecret}', '${lat}', '${lng}')`
     conn.query(query, (e, res) => {
