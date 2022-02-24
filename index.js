@@ -208,6 +208,14 @@ app.post("/contacts/create", async (req, res) => {
   })
 }) 
 
+app.delete("/contacts/:uid/delete", async (req, res) => {
+  let uid = req.params.uid
+  await deleteContact(uid)
+  res.json({
+    "status": res.statusCode
+  })
+})
+
 app.get("/inboxes/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
   let show = parseInt(req.query.show) || 30  
@@ -430,6 +438,19 @@ function insertSos(uid, category, media_url, content, status, lat, lng, address,
 function fetchContact() {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM contacts`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
+function deleteContact(uid) {
+  return new Promise((resolve, reject) => {
+    const query = `DELETE FROM contcats WHERE uid = '${uid}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
