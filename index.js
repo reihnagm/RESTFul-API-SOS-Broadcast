@@ -1,6 +1,7 @@
 const express = require("express")
 const cors = require("cors")
 const app = express()
+const axios = require("axios")
 const moment = require("moment")
 const mysql = require('mysql')
 const multer = require('multer')
@@ -118,6 +119,24 @@ app.post("/insert-sos", async (req, res) => {
 
     await insertSos(id, category, media_url, desc, status, lat, lng, address, duration, thumbnail, userId)
 
+    const contacts = await fetchContact(userId)
+
+    for (let i = 0; i < contacts.length; i++) {
+      await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
+        userkey: '0d88a7bc9d71',
+        passkey: 'df96c6b94cab1f0f2cc136b6',
+        link: media_url,
+        caption:`${contacts[i].name} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \n- Amulet`,
+        to: contacts[i].identifier
+      })
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });      
+    }
+  
     return res.json({
       "id": id,
       "content": desc,
