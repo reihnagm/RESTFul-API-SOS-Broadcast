@@ -126,7 +126,7 @@ app.post("/insert-sos", async (req, res) => {
         userkey: '0d88a7bc9d71',
         passkey: 'df96c6b94cab1f0f2cc136b6',
         link: media_url,
-        caption:`TESTING BANG STEVE`,
+        caption:`${contacts[i].identifier} Menjadikan Nomor Anda sebagai Kontak Darurat - Amulet`,
         to: contacts[i].identifier
       })
       .then(function (response) {
