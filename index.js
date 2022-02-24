@@ -126,7 +126,7 @@ app.post("/insert-sos", async (req, res) => {
         userkey: '0d88a7bc9d71',
         passkey: 'df96c6b94cab1f0f2cc136b6',
         link: media_url,
-        caption:`${contacts[i].name} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \n- Amulet`,
+        caption:`${contacts[i].name} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat - Amulet`,
         to: contacts[i].identifier
       })
       .then(function (response) {
