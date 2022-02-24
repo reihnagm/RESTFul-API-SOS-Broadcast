@@ -450,7 +450,7 @@ function fetchContact() {
 
 function deleteContact(uid) {
   return new Promise((resolve, reject) => {
-    const query = `DELETE FROM contcats WHERE uid = '${uid}'`
+    const query = `DELETE FROM contacts WHERE uid = '${uid}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
