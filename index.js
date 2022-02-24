@@ -188,8 +188,9 @@ app.put("/inboxes/update/:uid", async (req, res) => {
   })
 })
 
-app.get("/contacts", async (req, res) => {
-  let data = await fetchContact()
+app.get("/contacts/:user_id", async (req, res) => {
+  let userId = req.params.user_id
+  let data = await fetchContact(userId)
   res.json({
     "data": data
   })
@@ -435,9 +436,9 @@ function insertSos(uid, category, media_url, content, status, lat, lng, address,
   })
 }
 
-function fetchContact() {
+function fetchContact(userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM contacts`
+    const query = `SELECT * FROM contacts WHERE user_id = '${userId}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
