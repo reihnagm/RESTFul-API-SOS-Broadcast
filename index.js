@@ -7,7 +7,6 @@ const mysql = require("mysql")
 const helmet = require("helmet")
 const compression = require("compression")
 const multer = require("multer")
-const { json } = require("express/lib/response")
 const server = require("http").createServer(app)
 const io = require("socket.io")(server)
 
@@ -115,6 +114,7 @@ app.post("/store-sos", async (req, res) => {
     let id = req.body.id 
     let category = req.body.category
     let media_url = req.body.media_url
+    let media_url_phone = req.body.media_url_phone
     let desc = req.body.desc
     let lat = req.body.lat
     let lng = req.body.lng
@@ -125,7 +125,11 @@ app.post("/store-sos", async (req, res) => {
     let userName = req.body.username
     let userId = req.body.user_id
 
-    await storeSos(id, category, media_url, desc, status, lat, lng, address, duration, thumbnail, userId)
+    await storeSos(
+      id, category, media_url, media_url_phone, desc, status, 
+      lat, lng, address,
+      duration, thumbnail, userId
+    )
 
     const contacts = await getContact(userId)
 
@@ -212,7 +216,7 @@ app.get("/inbox/:user_id", async (req, res) => {
         "updated_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss a')
       })
     }
-    let totalUnread =  await getTotalInboxUnread(userId);
+    let totalUnread =  await getInboxTotalUnread(userId);
     return res.json({
       "data": inboxesAssign,
       "total_unread": totalUnread.length,
@@ -233,9 +237,16 @@ app.post("/inbox/store", async (req, res) => {
   let uid = req.body.uid 
   let title = req.body.title
   let content = req.body.content
+  let thumbnail = req.body.thumbnail
+  let mediaUrl = req.body.media_url
+  let type = req.body.type
   let userId = req.body.user_id
   
-  await inboxStore(uid, title, content, userId)
+  await inboxStore(
+    uid, title, 
+    content, thumbnail, 
+    mediaUrl, type, userId
+  )
 
   res.json({
     "status": res.statusCode
@@ -245,7 +256,7 @@ app.post("/inbox/store", async (req, res) => {
 app.put("/inbox/:uid/update", async (req, res) => {
   let uid = req.params.uid 
   
-  await inboxUpdate(uid, 1)
+  await inboxUpdate(uid)
 
   res.json({
     "status": res.statusCode
@@ -316,12 +327,12 @@ app.post("/upload-thumbnail", upload.single("thumbnail"), (req, res) => {
 
 // SOS
 
-
 function getSos(offset, limit, userId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT a.uid, 
     a.category, 
     a.media_url, 
+    a.media_url_phone,
     a.thumbnail, 
     a.content, 
     a.lat, 
@@ -351,6 +362,7 @@ function getAllSos(offset, limit) {
     const query = `SELECT a.uid, 
     a.category, 
     a.media_url, 
+    a.media_url_phone,
     a.thumbnail, 
     a.content, 
     a.lat, 
@@ -387,10 +399,11 @@ function getSosTotal() {
   })
 }
 
-function storeSos(uid, category, media_url, content, status, lat, lng, address, duration, thumbnail, userId) {
+function storeSos(uid, category, media_url, media_url_phone, content, status, lat, lng, address, duration, thumbnail, userId) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO sos (uid, category, media_url, content, lat, lng, address, status, duration, thumbnail, user_id) 
-    VALUES ('${uid}',  '${category}', '${media_url}', '${content}', '${lat}', '${lng}', '${address}', '${status}', '${duration}', '${thumbnail}', '${userId}')`
+    const query = `REPLACE INTO sos (uid, category, media_url, 
+    media_url_phone, content, lat, lng, address, status, duration, thumbnail, user_id) 
+    VALUES ('${uid}',  '${category}', '${media_url}', '${media_url_phone}', '${content}', '${lat}', '${lng}', '${address}', '${status}', '${duration}', '${thumbnail}', '${userId}')`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
@@ -416,7 +429,7 @@ function getInboxTotal() {
   })
 }
 
-function getTotalInboxUnread(userId) {
+function getInboxTotalUnread(userId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM inboxes WHERE is_read = 0 AND user_id = '${userId}'`
     conn.query(query, (e, res) => {
@@ -442,10 +455,11 @@ function getInbox(offset, limit, userId) {
   })
 }
 
-function inboxStore(uid, title, content, userId) {
+function inboxStore(uid, title, content, thumbnail, mediaUrl, type, userId) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO inboxes (uid, title, content, is_read, user_id) 
-    VALUES ('${uid}', '${title}', '${content}', 0, '${userId}')`
+    const query = `REPLACE INTO inboxes (uid, title, content, thumbnail, media_url, is_read, type, user_id) 
+    VALUES ('${uid}', '${title}', '${content}', '${thumbnail}', '${mediaUrl}', 0,
+    '${type}' ,'${userId}')`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
