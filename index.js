@@ -58,11 +58,15 @@ io.on('connection', function (client) {
 })
 
 app.use(cors())
+app.use(helmet())
+app.use(compression())
 app.use(express.static("public"))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-app.get("/fetch-sos/:user_id", async (req, res) => {
+// SOS
+
+app.get("/get-sos/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
   let show = parseInt(req.query.show) || 30  
   let offset  = (page - 1) * show
@@ -74,7 +78,7 @@ app.get("/fetch-sos/:user_id", async (req, res) => {
   if(req.params.user_id != "all") {
     try {
       let userId = req.params.user_id
-      let sos = await fetchSos(offset, show, userId)
+      let sos = await getSos(offset, show, userId)
       return res.json({
         "data": sos,
         "total": total,
@@ -89,7 +93,7 @@ app.get("/fetch-sos/:user_id", async (req, res) => {
       console.log(e)
     }
   } else {
-    let sos = await fetchAllSos(offset, show)
+    let sos = await getAllSos(offset, show)
     return res.json({
       "data": sos,
       "total": total,
@@ -103,7 +107,7 @@ app.get("/fetch-sos/:user_id", async (req, res) => {
   }
 })
 
-app.post("/insert-sos", async (req, res) => {
+app.post("/store-sos", async (req, res) => {
   try {
     let id = req.body.id 
     let category = req.body.category
@@ -117,16 +121,16 @@ app.post("/insert-sos", async (req, res) => {
     let thumbnail = req.body.thumbnail
     let userId = req.body.user_id
 
-    await insertSos(id, category, media_url, desc, status, lat, lng, address, duration, thumbnail, userId)
+    await storeSos(id, category, media_url, desc, status, lat, lng, address, duration, thumbnail, userId)
 
-    const contacts = await fetchContact(userId)
+    const contacts = await getContact(userId)
 
     for (let i = 0; i < contacts.length; i++) {
       await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
         userkey: '0d88a7bc9d71',
         passkey: 'df96c6b94cab1f0f2cc136b6',
         link: media_url,
-        caption:`${contacts[i].identifier} Menjadikan Nomor Anda sebagai Kontak Darurat - Amulet`,
+        caption:`${contacts[i].name} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \n- Amulet`,
         to: contacts[i].identifier
       })
       .then(function (response) {
@@ -155,9 +159,11 @@ app.post("/insert-sos", async (req, res) => {
   }
 })
 
+// FCM
+
 app.get("/fetch-fcm", async (req, res) => {
   try {
-    const fcmSecret = await fetchFcm()
+    const fcmSecret = await getFcm()
     return res.json({
       "data": fcmSecret
     })
@@ -171,72 +177,18 @@ app.post("/init-fcm", async (req, res) => {
   let fcmSecret = req.body.fcm_secret
   let lat = req.body.lat
   let lng = req.body.lng
-  try {
-    await initFcm(userId, fcmSecret, lat, lng)
-    return res.json({
-      "user_id": userId,
-      "fcm_secret": fcmSecret,
-      "lat": lat,
-      "lng": lng
-    })
-  } catch(e) {
-    console.log(e)
-  }
-})
-
-app.post("/inboxes/create", async (req, res) => {
-  let uid = req.body.uid 
-  let title = req.body.title
-  let content = req.body.content
-  let userId = req.body.user_id
-  
-  await inboxesStore(uid, title, content, userId)
-
-  res.json({
-    "status": res.statusCode
+  await initFcm(userId, fcmSecret, lat, lng)
+  return res.json({
+    "user_id": userId,
+    "fcm_secret": fcmSecret,
+    "lat": lat,
+    "lng": lng
   })
 })
 
-app.put("/inboxes/update/:uid", async (req, res) => {
-  let uid = req.params.uid 
-  
-  await inboxesUpdate(uid, 1)
+// INBOX
 
-  res.json({
-    "status": res.statusCode
-  })
-})
-
-app.get("/contacts/:user_id", async (req, res) => {
-  let userId = req.params.user_id
-  let data = await fetchContact(userId)
-  res.json({
-    "data": data
-  })
-}) 
-
-app.post("/contacts/create", async (req, res) => {
-  let uid = req.body.uid
-  let name = req.body.name
-  let identifier = req.body.identifier
-  let userId = req.body.user_id
-
-  await insertContact(uid, name, identifier, userId)
-
-  res.json({
-    "status": res.statusCode
-  })
-}) 
-
-app.delete("/contacts/:uid/delete", async (req, res) => {
-  let uid = req.params.uid
-  await deleteContact(uid)
-  res.json({
-    "status": res.statusCode
-  })
-})
-
-app.get("/inboxes/:user_id", async (req, res) => {
+app.get("/inbox/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
   let show = parseInt(req.query.show) || 30  
   let offset  = (page - 1) * show
@@ -248,7 +200,7 @@ app.get("/inboxes/:user_id", async (req, res) => {
  
   try {
     let userId = req.params.user_id
-    let inboxes = await fetchInboxes(offset, show, userId)
+    let inboxes = await getInbox(offset, show, userId)
     let inboxesAssign = [];
     for (let i = 0; i < inboxes.length; i++) {
       inboxesAssign.push({
@@ -276,6 +228,62 @@ app.get("/inboxes/:user_id", async (req, res) => {
     console.log(e)
   }
 });
+
+app.post("/inbox/store", async (req, res) => {
+  let uid = req.body.uid 
+  let title = req.body.title
+  let content = req.body.content
+  let userId = req.body.user_id
+  
+  await inboxesStore(uid, title, content, userId)
+
+  res.json({
+    "status": res.statusCode
+  })
+})
+
+app.put("/inbox/:uid/update", async (req, res) => {
+  let uid = req.params.uid 
+  
+  await inboxesUpdate(uid, 1)
+
+  res.json({
+    "status": res.statusCode
+  })
+})
+
+// CONTACTS
+
+app.get("/contacts/:user_id", async (req, res) => {
+  let userId = req.params.user_id
+  let data = await fetchContact(userId)
+  res.json({
+    "data": data
+  })
+}) 
+
+app.post("/contacts/create", async (req, res) => {
+  let uid = req.body.uid
+  let name = req.body.name
+  let identifier = req.body.identifier
+  let userId = req.body.user_id
+
+  await storeContact(uid, name, identifier, userId)
+
+  res.json({
+    "status": res.statusCode
+  })
+}) 
+
+app.delete("/contacts/:uid/delete", async (req, res) => {
+  let uid = req.params.uid
+  await deleteContact(uid)
+  res.json({
+    "status": res.statusCode
+  })
+})
+
+// MEDIA
 
 app.post("/upload", upload.single("video"), (req, res) => {
   let filename
@@ -305,7 +313,11 @@ app.post("/upload-thumbnail", upload.single("thumbnail"), (req, res) => {
   }
 })
 
-function fetchSos(offset, limit, userId) {
+
+// SOS
+
+
+function getSos(offset, limit, userId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT a.uid, 
     a.category, 
@@ -334,7 +346,7 @@ function fetchSos(offset, limit, userId) {
   })
 }
 
-function fetchAllSos(offset, limit) {
+function getAllSos(offset, limit) {
   return new Promise((resolve, reject) => {
     const query = `SELECT a.uid, 
     a.category, 
@@ -362,86 +374,20 @@ function fetchAllSos(offset, limit) {
   })
 }
 
-function fetchTotalInboxesUnread(userId) {
-  return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM inboxes WHERE is_read = 0 AND user_id = '${userId}'`
-    conn.query(query, (e, res) => {
-      if(e) {
-        reject(new Error(e))
-      } else {
-        resolve(res)
-      }
-    })
-  })
-}
-
-function fetchInboxes(offset, limit, userId) {
-  return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM inboxes WHERE user_id='${userId}' LIMIT ${offset}, ${limit}`
-    conn.query(query, (e, res) => {
-      if(e) {
-        reject(new Error(e))
-      } else {
-        resolve(res)
-      }
-    })
-  })
-}
-
-function fetchSosTotal() {
+function getSosTotal() {
   return new Promise((resolve, reject) => {
     const query = `SELECT COUNT(*) AS total FROM sos`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
-      } else {
+      } else {  
         resolve(res[0].total)
       }
     })
   })
 }
 
-function fetchInboxesTotal() {
-  return new Promise((resolve, reject) => {
-    const query = `SELECT COUNT(*) AS total FROM inboxes`
-    conn.query(query, (e, res) => {
-      if(e) {
-        reject(new Error(e))
-      } else {
-        resolve(res[0].total)
-      }
-    })
-  })
-}
-
-function inboxesStore(uid, title, content, userId) {
-  return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO inboxes (uid, title, content, is_read, user_id) 
-    VALUES ('${uid}', '${title}', '${content}', 0, '${userId}')`
-    conn.query(query, (e, res) => {
-      if(e) {
-        reject(new Error(e))
-      } else {
-        resolve(res[0])
-      }
-    })
-  })
-}
-
-function inboxesUpdate(uid) {
-  return new Promise((resolve, reject) => {
-    const query = `UPDATE inboxes SET is_read = 1 WHERE uid = '${uid}'`
-    conn.query(query, (e, res) => {
-      if(e) {
-        reject(new Error(e))
-      } else {
-        resolve(res[0])
-      }
-    })
-  })
-}
-
-function insertSos(uid, category, media_url, content, status, lat, lng, address, duration, thumbnail, userId) {
+function storeSos(uid, category, media_url, content, status, lat, lng, address, duration, thumbnail, userId) {
   return new Promise((resolve, reject) => {
     const query = `REPLACE INTO sos (uid, category, media_url, content, lat, lng, address, status, duration, thumbnail, user_id) 
     VALUES ('${uid}',  '${category}', '${media_url}', '${content}', '${lat}', '${lng}', '${address}', '${status}', '${duration}', '${thumbnail}', '${userId}')`
@@ -455,7 +401,77 @@ function insertSos(uid, category, media_url, content, status, lat, lng, address,
   })
 }
 
-function fetchContact(userId) {
+// INBOX
+
+function getInboxTotal() {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT COUNT(*) AS total FROM inboxes`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0].total)
+      }
+    })
+  })
+}
+
+function getTotalInboxUnread(userId) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM inboxes WHERE is_read = 0 AND user_id = '${userId}'`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
+function getInbox(offset, limit, userId) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM inboxes WHERE user_id='${userId}' LIMIT ${offset}, ${limit}`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
+function inboxStore(uid, title, content, userId) {
+  return new Promise((resolve, reject) => {
+    const query = `REPLACE INTO inboxes (uid, title, content, is_read, user_id) 
+    VALUES ('${uid}', '${title}', '${content}', 0, '${userId}')`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0])
+      }
+    })
+  })
+}
+
+function inboxUpdate(uid) {
+  return new Promise((resolve, reject) => {
+    const query = `UPDATE inboxes SET is_read = 1 WHERE uid = '${uid}'`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0])
+      }
+    })
+  })
+}
+
+// CONTACTS
+
+function getContact(userId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM contacts WHERE user_id = '${userId}'`
     conn.query(query, (e, res) => {
@@ -468,7 +484,7 @@ function fetchContact(userId) {
   })
 }
 
-function deleteContact(uid) {
+function destroyContact(uid) {
   return new Promise((resolve, reject) => {
     const query = `DELETE FROM contacts WHERE uid = '${uid}'`
     conn.query(query, (e, res) => {
@@ -481,7 +497,7 @@ function deleteContact(uid) {
   })
 }
 
-function insertContact(uid, name, identifier, userId) {
+function storeContact(uid, name, identifier, userId) {
   return new Promise((resolve, reject) => {
     const query = `REPLACE INTO contacts (uid, name, identifier, user_id)  
     VALUES('${uid}', '${name}', '${identifier}', '${userId}')`
@@ -495,7 +511,9 @@ function insertContact(uid, name, identifier, userId) {
   })
 }
 
-function fetchFcm() {
+// FCM
+
+function getFcm() {
   return new Promise((resolve, reject) => {
     const query = `SELECT a.*, b.fullname FROM fcm a INNER JOIN users b ON a.uid = b.user_id`
     conn.query(query, (e, res) => {
@@ -510,7 +528,8 @@ function fetchFcm() {
 
 function initFcm(uid, fcmSecret, lat, lng) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO fcm (uid, fcm_secret, lat, lng) VALUES ('${uid}', '${fcmSecret}', '${lat}', '${lng}')`
+    const query = `REPLACE INTO fcm (uid, fcm_secret, lat, lng) VALUES 
+    ('${uid}', '${fcmSecret}', '${lat}', '${lng}')`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
