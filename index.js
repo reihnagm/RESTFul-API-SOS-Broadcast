@@ -237,7 +237,7 @@ app.post("/inbox/store", async (req, res) => {
   let content = req.body.content
   let userId = req.body.user_id
   
-  await inboxesStore(uid, title, content, userId)
+  await inboxStore(uid, title, content, userId)
 
   res.json({
     "status": res.statusCode
@@ -247,7 +247,7 @@ app.post("/inbox/store", async (req, res) => {
 app.put("/inbox/:uid/update", async (req, res) => {
   let uid = req.params.uid 
   
-  await inboxesUpdate(uid, 1)
+  await inboxUpdate(uid, 1)
 
   res.json({
     "status": res.statusCode
