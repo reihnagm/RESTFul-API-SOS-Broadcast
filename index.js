@@ -258,13 +258,13 @@ app.put("/inbox/:uid/update", async (req, res) => {
 
 app.get("/contacts/:user_id", async (req, res) => {
   let userId = req.params.user_id
-  let data = await fetchContact(userId)
+  let data = await getContact(userId)
   res.json({
     "data": data
   })
 }) 
 
-app.post("/contacts/create", async (req, res) => {
+app.post("/contacts/store", async (req, res) => {
   let uid = req.body.uid
   let name = req.body.name
   let identifier = req.body.identifier
