@@ -211,6 +211,8 @@ app.get("/inbox/:user_id", async (req, res) => {
         "uid": inboxes[i].uid,
         "is_read": inboxes[i].is_read,
         "title": inboxes[i].title,
+        "media_url": inboxes[i].media_url,
+        "thumbnail": inboxes[i].thumbnail,
         "content": inboxes[i].content,
         "created_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss a'),
         "updated_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss a')
