@@ -72,7 +72,7 @@ app.get("/get-sos/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
   let show = parseInt(req.query.show) || 30  
   let offset  = (page - 1) * show
-  let total = await fetchSosTotal()
+  let total = await getSosTotal()
   let resultTotal = Math.ceil(total / show) 
   let perPage = Math.ceil(resultTotal / show) 
   let prevPage = page === 1 ? 1 : page - 1
@@ -163,7 +163,7 @@ app.post("/store-sos", async (req, res) => {
 
 // FCM
 
-app.get("/fetch-fcm", async (req, res) => {
+app.get("/get-fcm", async (req, res) => {
   try {
     const fcmSecret = await getFcm()
     return res.json({
@@ -194,7 +194,7 @@ app.get("/inbox/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
   let show = parseInt(req.query.show) || 30  
   let offset  = (page - 1) * show
-  let total = await fetchInboxesTotal()
+  let total = await getInboxTotal()
   let resultTotal = Math.ceil(total / show) 
   let perPage = Math.ceil(resultTotal / show) 
   let prevPage = page === 1 ? 1 : page - 1
@@ -214,7 +214,7 @@ app.get("/inbox/:user_id", async (req, res) => {
         "updated_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss a')
       })
     }
-    let totalUnread =  await fetchTotalInboxesUnread(userId);
+    let totalUnread =  await getTotalInboxUnread(userId);
     return res.json({
       "data": inboxesAssign,
       "total_unread": totalUnread.length,
