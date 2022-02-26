@@ -7,6 +7,7 @@ const mysql = require("mysql")
 const helmet = require("helmet")
 const compression = require("compression")
 const multer = require("multer")
+const { json } = require("express/lib/response")
 const server = require("http").createServer(app)
 const io = require("socket.io")(server)
 
@@ -121,40 +122,37 @@ app.post("/store-sos", async (req, res) => {
     let status = req.body.status
     let duration = req.body.duration
     let thumbnail = req.body.thumbnail
+    let userName = req.body.username
     let userId = req.body.user_id
 
     await storeSos(id, category, media_url, desc, status, lat, lng, address, duration, thumbnail, userId)
 
     const contacts = await getContact(userId)
 
-    for (let i = 0; i < contacts.length; i++) {
-      await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
-        userkey: '0d88a7bc9d71',
-        passkey: 'df96c6b94cab1f0f2cc136b6',
-        link: media_url,
-        caption:`${contacts[i].name} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \n- Amulet`,
-        to: contacts[i].identifier
-      })
-      .then(function (response) {
-        console.log(response);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });      
+    if(contacts.length != 0) {
+      for (let i = 0; i < contacts.length; i++) {
+        await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
+          userkey: '0d88a7bc9d71',
+          passkey: 'df96c6b94cab1f0f2cc136b6',
+          link: media_url,
+          caption:`${userName} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \n- Amulet`,
+          to: contacts[i].identifier
+        })
+        .then(function (response) {
+          return json({
+            "status": response.status
+          })
+        })
+        .catch(function (error) {
+          return json({
+            "status": error.status
+          })
+        });      
+      }
     }
   
     return res.json({
-      "id": id,
-      "content": desc,
-      "media_url": media_url,
-      "category": category,
-      "lat": lat,
-      "lng": lng,
-      "address": address,
-      "status": status,
-      "duration": duration,
-      "thumbnail": thumbnail,
-      "user_id": userId
+      "status": res.statusCode
     })
   } catch(e) {
     console.log(e)
