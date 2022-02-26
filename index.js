@@ -3,10 +3,12 @@ const cors = require("cors")
 const app = express()
 const axios = require("axios")
 const moment = require("moment")
-const mysql = require('mysql')
-const multer = require('multer')
-const server = require('http').createServer(app)
-const io = require('socket.io')(server)
+const mysql = require("mysql")
+const helmet = require("helmet")
+const compression = require("compression")
+const multer = require("multer")
+const server = require("http").createServer(app)
+const io = require("socket.io")(server)
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
