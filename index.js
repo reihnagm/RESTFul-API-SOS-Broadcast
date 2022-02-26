@@ -279,7 +279,7 @@ app.post("/contacts/store", async (req, res) => {
 
 app.delete("/contacts/:uid/delete", async (req, res) => {
   let uid = req.params.uid
-  await deleteContact(uid)
+  await destroyContact(uid)
   res.json({
     "status": res.statusCode
   })
