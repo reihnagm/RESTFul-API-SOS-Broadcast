@@ -144,12 +144,12 @@ app.post("/store-sos", async (req, res) => {
         })
         .then(function (response) {
           return json({
-            "status": response.status
+            "status": 200
           })
         })
         .catch(function (error) {
           return json({
-            "status": error.status
+            "status": "Oops!"
           })
         });      
       }
