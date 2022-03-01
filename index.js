@@ -97,6 +97,36 @@ app.get("/get-agent-sos/:is_confirm", async (req, res) => {
   }
 })
 
+app.get("/get-history-agent-sos/:is_confirm/:user_accept_id", async (req, res) => {
+  try {
+    let isConfirm = req.params.is_confirm
+    let userAcceptId = req.params.user_accept_id
+    let sos = await getHistoryAgentSos(isConfirm, userAcceptId)
+    let arr = []
+    for(let i = 0; i < sos.length; i++) {
+      arr.push({
+        "uid": sos[i].uid,
+        "sender": {
+          "name": sos[i].sender_name,
+          "fcm": sos[i].sender_fcm
+        },
+        "accept_name": sos[i].accept_name,
+        "category": sos[i].category,
+        "content": sos[i].content,
+        "lat": sos[i].lat,
+        "lng": sos[i].lng,
+        "address": sos[i].address,
+        "created_at": sos[i].created_at
+      })
+    }
+    return res.json({
+      "data": arr,
+    })
+  } catch(e) {
+    console.log(e)
+  }
+})
+
 app.put("/accept-sos", async (req, res) => {
   try {
     let sosId = req.body.sos_id
@@ -473,6 +503,27 @@ function storeSosConfirm(sosId, userId) {
   })
 }
 
+function getHistoryAgentSos(confirm, userAcceptId) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT a.uid, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
+    a.lng, a.address, a.created_at FROM sos a 
+    LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
+    LEFT JOIN users d ON b.user_accept_id = d.user_id 
+    LEFT JOIN fcm f ON f.uid = a.user_id
+    INNER JOIN users c ON a.user_id = c.user_id 
+    WHERE b.is_confirm = '${confirm}' 
+    AND b.user_accept_id = '${userAcceptId}'`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e)) 
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
 function getAgentSos(confirm) {
   return new Promise((resolve, reject) => {
     const query = `SELECT a.uid, c.fullname sender_name, f.fcm_secret sender_fcm, 
@@ -482,7 +533,7 @@ function getAgentSos(confirm) {
     LEFT JOIN users d ON b.user_accept_id = d.user_id 
     LEFT JOIN fcm f ON f.uid = a.user_id
     INNER JOIN users c ON a.user_id = c.user_id 
-    WHERE b.is_confirm = ${confirm}`
+    WHERE b.is_confirm = '${confirm}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
