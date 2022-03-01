@@ -135,29 +135,24 @@ app.post("/store-sos", async (req, res) => {
 
     if(contacts.length != 0) {
       for (let i = 0; i < contacts.length; i++) {
-        await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
-          userkey: '0d88a7bc9d71',
-          passkey: 'df96c6b94cab1f0f2cc136b6',
-          link: media_url,
-          caption:`${userName} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \n- Amulet`,
-          to: contacts[i].identifier
-        })
-        .then(function (response) {
-          return res.json({
-            "status": response.status
-          })
-        })
-        .catch(function (error) {
-          return res.json({
-            "status": error.status
-          })
-        });      
+        try {
+          await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
+            userkey: '0d88a7bc9d71',
+            passkey: 'df96c6b94cab1f0f2cc136b6',
+            link: media_url,
+            caption:`${userName} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \n- Amulet`,
+            to: contacts[i].identifier
+          })  
+        } catch(e) {
+          console.log(e)
+        }
       }
     }
-  
+
     return res.json({
       "status": res.statusCode
     })
+    
   } catch(e) {
     console.log(e)
   }
