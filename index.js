@@ -125,14 +125,14 @@ app.post("/store-sos", async (req, res) => {
     let userName = req.body.username
     let userId = req.body.user_id
 
-    const sosId = await storeSos(
+    await storeSos(
       id, category, media_url, media_url_phone, desc, status, 
       lat, lng, address,
       duration, thumbnail, userId
     )
 
     try {
-      await storeSosConfirm(id, sosId, userId)
+      await storeSosConfirm(id, userId)
     } catch(e) {
       console.log(e)
     }
@@ -411,16 +411,16 @@ function storeSos(uid, category, media_url, media_url_phone, content, status, la
       if(e) {
         reject(new Error(e))
       } else {
-        resolve(res.resultId)
+        resolve(res)
       }
     })
   })
 }
 
-function storeSosConfirm(uid, sosId, userId) {
+function storeSosConfirm(sosId, userId) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO sos_confirms (uid, sos_uid, is_confirm, user_sender_id) 
-    VALUES('${uid}','${sosId}', '0', '${userId}')`
+    const query = `REPLACE INTO sos_confirms (sos_uid, is_confirm, user_sender_id) 
+    VALUES('${sosId}', '0', '${userId}')`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
