@@ -404,7 +404,7 @@ function getSosTotal() {
 
 function storeSos(uid, category, media_url, media_url_phone, content, status, lat, lng, address, duration, thumbnail, userId) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO sos (uid, category, media_url, 
+    const query = `INSERT INTO sos (uid, category, media_url, 
     media_url_phone, content, lat, lng, address, status, duration, thumbnail, user_id) 
     VALUES ('${uid}', '${category}', '${media_url}', '${media_url_phone}', '${content}', '${lat}', '${lng}', '${address}', '${status}', '${duration}', '${thumbnail}', '${userId}')`
     conn.query(query, (e, res) => {
@@ -419,7 +419,7 @@ function storeSos(uid, category, media_url, media_url_phone, content, status, la
 
 function storeSosConfirm(uid, sosId, userId) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO sos_confirms (uid, sos_uid, is_confirm, user_sender_uid) 
+    const query = `INSERT INTO sos_confirms (uid, sos_uid, is_confirm, user_sender_uid) 
     VALUES('${uid}','${sosId}', '0', '${userId}')`
     conn.query(query, (e, res) => {
       if(e) {
