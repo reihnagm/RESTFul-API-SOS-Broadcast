@@ -406,7 +406,7 @@ function storeSos(uid, category, media_url, media_url_phone, content, status, la
   return new Promise((resolve, reject) => {
     const query = `REPLACE INTO sos (uid, category, media_url, 
     media_url_phone, content, lat, lng, address, status, duration, thumbnail, user_id) 
-    VALUES ('${uid}',  '${category}', '${media_url}', '${media_url_phone}', '${content}', '${lat}', '${lng}', '${address}', '${status}', '${duration}', '${thumbnail}', '${userId}')`
+    VALUES ('${uid}', '${category}', '${media_url}', '${media_url_phone}', '${content}', '${lat}', '${lng}', '${address}', '${status}', '${duration}', '${thumbnail}', '${userId}')`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
