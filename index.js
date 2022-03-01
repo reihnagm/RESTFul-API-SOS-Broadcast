@@ -68,6 +68,48 @@ app.use(express.urlencoded({ extended: true }))
 
 // SOS
 
+app.get("/get-agent-sos/:is_confirm", async (req, res) => {
+  try {
+    let isConfirm = req.params.is_confirm
+    let sos = await getAgentSos(isConfirm)
+    let arr = []
+    for(let i = 0; i < sos.length; i++) {
+      arr.push({
+        "uid": sos[i].uid,
+        "sender": {
+          "name": sos[i].sender_name,
+          "fcm": sos[i].sender_fcm
+        },
+        "accept_name": sos[i].accept_name,
+        "category": sos[i].category,
+        "content": sos[i].content,
+        "lat": sos[i].lat,
+        "lng": sos[i].lng,
+        "address": sos[i].address,
+        "created_at": sos[i].created_at
+      })
+    }
+    return res.json({
+      "data": arr,
+    })
+  } catch(e) {
+    console.log(e)
+  }
+})
+
+app.put("/accept-sos", async (req, res) => {
+  try {
+    let sosId = req.body.sos_id
+    let userAcceptId = req.body.user_accept_id
+    await acceptSosConfirm(sosId, userAcceptId)
+    return res.json({
+      "status": res.statusCode
+    })
+  } catch(e) {
+    console.log(e)
+  }
+})
+
 app.get("/get-sos/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
   let show = parseInt(req.query.show) || 30  
@@ -421,6 +463,26 @@ function storeSosConfirm(sosId, userId) {
   return new Promise((resolve, reject) => {
     const query = `REPLACE INTO sos_confirms (sos_uid, is_confirm, user_sender_id) 
     VALUES('${sosId}', '0', '${userId}')`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e)) 
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
+function getAgentSos(confirm) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT a.uid, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
+    a.lng, a.address, a.created_at FROM sos a 
+    LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
+    LEFT JOIN users d ON b.user_accept_id = d.user_id 
+    LEFT JOIN fcm f ON f.uid = a.user_id
+    INNER JOIN users c ON a.user_id = c.user_id 
+    WHERE b.is_confirm = ${confirm}`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
