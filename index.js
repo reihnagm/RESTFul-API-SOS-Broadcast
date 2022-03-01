@@ -125,11 +125,17 @@ app.post("/store-sos", async (req, res) => {
     let userName = req.body.username
     let userId = req.body.user_id
 
-    await storeSos(
+    const sosId = await storeSos(
       id, category, media_url, media_url_phone, desc, status, 
       lat, lng, address,
       duration, thumbnail, userId
     )
+
+    try {
+      await storeSosConfirm(id, sosId, userId)
+    } catch(e) {
+      console.log(e)
+    }
 
     const contacts = await getContact(userId)
 
@@ -405,7 +411,34 @@ function storeSos(uid, category, media_url, media_url_phone, content, status, la
       if(e) {
         reject(new Error(e))
       } else {
-        resolve(res[0])
+        resolve(res.resultId)
+      }
+    })
+  })
+}
+
+function storeSosConfirm(uid, sosId, userId) {
+  return new Promise((resolve, reject) => {
+    const query = `REPLACE INTO sos_confirms (uid, sos_uid, is_confirm, user_sender_uid) 
+    VALUES('${uid}','${sosId}', '0', '${userId}')`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e)) 
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
+function acceptSosConfirm(sosId, userAcceptId) {
+  return new Promise((resolve, reject) => {
+    const query = `UPDATE sos_confirms SET is_confirm = 1, user_accept_id = '${userAcceptId}' WHERE sos_id = '${sosId}'`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e)) 
+      } else {
+        resolve(res)
       }
     })
   })
