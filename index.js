@@ -495,7 +495,7 @@ function getAgentSos(confirm) {
 
 function acceptSosConfirm(sosId, userAcceptId) {
   return new Promise((resolve, reject) => {
-    const query = `UPDATE sos_confirms SET is_confirm = 1, user_accept_id = '${userAcceptId}' WHERE sos_id = '${sosId}'`
+    const query = `UPDATE sos_confirms SET is_confirm = 1, user_accept_id = '${userAcceptId}' WHERE sos_uid = '${sosId}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
