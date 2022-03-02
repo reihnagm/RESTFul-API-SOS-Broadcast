@@ -271,6 +271,7 @@ app.get("/get-sos/:user_id", async (req, res) => {
 app.post("/store-sos", async (req, res) => {
   try {
     let id = req.body.id 
+    let signId = req.body.sign_id
     let category = req.body.category
     let media_url = req.body.media_url
     let media_url_phone = req.body.media_url_phone
@@ -284,13 +285,11 @@ app.post("/store-sos", async (req, res) => {
     let userName = req.body.username
     let userId = req.body.user_id
 
-    var seq = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
-
     await storeSos(
       id, category, media_url, media_url_phone, 
       desc, status, 
       lat, lng, address,
-      duration, thumbnail, userId, seq
+      duration, thumbnail, userId, signId
     )
 
     try {
