@@ -273,7 +273,8 @@ app.post("/store-sos", async (req, res) => {
     let userId = req.body.user_id
 
     await storeSos(
-      id, category, media_url, media_url_phone, desc, status, 
+      id, category, media_url, media_url_phone, 
+      desc, status, 
       lat, lng, address,
       duration, thumbnail, userId
     )
@@ -568,7 +569,7 @@ function storeSos(uid, category, media_url, media_url_phone, content, status, la
 
 function storeSosConfirm(sosId, userId) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO sos_confirms (sos_uid, is_confirm, user_sender_id) 
+    const query = `INSERT INTO sos_confirms (sos_uid, is_confirm, user_sender_id) 
     VALUES('${sosId}', '0', '${userId}')`
     conn.query(query, (e, res) => {
       if(e) {
@@ -582,7 +583,7 @@ function storeSosConfirm(sosId, userId) {
 
 function getHistorySos(confirm, userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, a.thumbnail, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
@@ -603,7 +604,7 @@ function getHistorySos(confirm, userId) {
 
 function getHistoryAgentSos(confirm, userAcceptId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, a.thumbnail, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
@@ -624,7 +625,7 @@ function getHistoryAgentSos(confirm, userAcceptId) {
 
 function getAgentSos(confirm) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, a.thumbnail, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
