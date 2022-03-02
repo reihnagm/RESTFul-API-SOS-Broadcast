@@ -187,9 +187,29 @@ app.get("/get-sos/:user_id", async (req, res) => {
   if(req.params.user_id != "all") {
     try {
       let userId = req.params.user_id
+      let arr = []
       let sos = await getSos(offset, show, userId)
+      for (let i = 0; i < sos.length; i++) {
+        arr.push({
+          "uid": sos[i]["uid"],
+          "category": sos[i]["category"],
+          "media_url": sos[i]["media_url"],
+          "media_url_phone": sos[i]["media_url_phone"],
+          "thumbnail": sos[i]["thumbnail"],
+          "content": sos[i]["content"],
+          "lat": sos[i]["lat"],
+          "lng": sos[i]["lng"],
+          "address": sos[i]["address"],
+          "status": sos[i]["status"],
+          "duration": sos[i]["duration"],
+          "created_at": moment(sos[i]["created_at"]).format('MMMM Do YYYY, h:mm:ss a'),
+          "updated_at": moment(sos[i]["updated_at"]).format('MMMM Do YYYY, h:mm:ss a'),
+          "fullname": sos[i]["fullname"],
+          "phone_number": sos[i]["phone_number"]
+        })
+      }
       return res.json({
-        "data": sos,
+        "data": arr,
         "total": total,
         "perPage": perPage,
         "nextPage": nextPage,
@@ -202,9 +222,29 @@ app.get("/get-sos/:user_id", async (req, res) => {
       console.log(e)
     }
   } else {
+    let arr = []
     let sos = await getAllSos(offset, show)
+    for (let i = 0; i < sos.length; i++) {
+      arr.push({
+        "uid": sos[i]["uid"],
+        "category": sos[i]["category"],
+        "media_url": sos[i]["media_url"],
+        "media_url_phone": sos[i]["media_url_phone"],
+        "thumbnail": sos[i]["thumbnail"],
+        "content": sos[i]["content"],
+        "lat": sos[i]["lat"],
+        "lng": sos[i]["lng"],
+        "address": sos[i]["address"],
+        "status": sos[i]["status"],
+        "duration": sos[i]["duration"],
+        "created_at": moment(sos[i]["created_at"]).format('MMMM Do YYYY, h:mm:ss a'),
+        "updated_at": moment(sos[i]["updated_at"]).format('MMMM Do YYYY, h:mm:ss a'),
+        "fullname": sos[i]["fullname"],
+        "phone_number": sos[i]["phone_number"]
+      })
+    }
     return res.json({
-      "data": sos,
+      "data": arr,
       "total": total,
       "perPage": perPage,
       "nextPage": nextPage,
