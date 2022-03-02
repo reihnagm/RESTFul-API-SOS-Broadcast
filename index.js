@@ -85,6 +85,7 @@ app.get("/get-agent-sos/:is_confirm", async (req, res) => {
           "name": sos[i].sender_name,
           "fcm": sos[i].sender_fcm
         },
+        "sign_id": sos[i].sign_id,
         "accept_name": sos[i].accept_name,
         "category": sos[i].category,
         "content": sos[i].content,
@@ -117,6 +118,7 @@ app.get("/get-history-agent-sos/:is_confirm/:user_accept_id", async (req, res) =
           "name": sos[i].sender_name,
           "fcm": sos[i].sender_fcm
         },
+        "sign_id": sos[i].sign_id,
         "accept_name": sos[i].accept_name,
         "category": sos[i].category,
         "content": sos[i].content,
@@ -149,6 +151,7 @@ app.get("/get-history-sos/:is_confirm/:user_accept_id", async (req, res) => {
           "name": sos[i].sender_name,
           "fcm": sos[i].sender_fcm
         },
+        "sign_id": sos[i].sign_id,
         "accept_name": sos[i].accept_name,
         "category": sos[i].category,
         "content": sos[i].content,
