@@ -3,6 +3,7 @@ const cors = require("cors")
 const app = express()
 const axios = require("axios")
 const moment = require("moment")
+moment.locale('id')
 const mysql = require("mysql")
 const helmet = require("helmet")
 const compression = require("compression")
@@ -249,8 +250,8 @@ app.get("/get-sos/:user_id", async (req, res) => {
         "address": sos[i]["address"],
         "status": sos[i]["status"],
         "duration": sos[i]["duration"],
-        "created_at": moment(sos[i]["created_at"]).format('MMMM Do YYYY, h:mm:ss a'),
-        "updated_at": moment(sos[i]["updated_at"]).format('MMMM Do YYYY, h:mm:ss a'),
+        "created_at": moment(sos[i]["created_at"]).format('Do MMMM YYYY, hh:mm:ss'),
+        "updated_at": moment(sos[i]["updated_at"]).format('Do MMMM YYYY, hh:mm:ss'),
         "fullname": sos[i]["fullname"],
         "phone_number": sos[i]["phone_number"]
       })
@@ -376,8 +377,8 @@ app.get("/inbox/:user_id", async (req, res) => {
         "media_url": inboxes[i].media_url,
         "thumbnail": inboxes[i].thumbnail,
         "content": inboxes[i].content,
-        "created_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss a'),
-        "updated_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss a')
+        "created_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss'),
+        "updated_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss')
       })
     }
     let totalUnread =  await getInboxTotalUnread(userId);
