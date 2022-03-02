@@ -575,8 +575,8 @@ function storeSos(uid, category, media_url, media_url_phone, content, status, la
 
 function storeSosConfirm(sosId, userId) {
   return new Promise((resolve, reject) => {
-    const query = `INSERT INTO sos_confirms (sos_uid, is_confirm, user_sender_id) 
-    VALUES('${sosId}', '0', '${userId}')`
+    const query = `INSERT INTO sos_confirms (sos_uid, is_confirm, user_sender_id, as) 
+    VALUES('${sosId}', '0', '${userId}', 'Agent')`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
