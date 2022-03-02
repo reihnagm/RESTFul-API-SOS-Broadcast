@@ -85,6 +85,7 @@ app.get("/get-agent-sos/:is_confirm", async (req, res) => {
           "name": sos[i].sender_name,
           "fcm": sos[i].sender_fcm
         },
+        "as_name": sos[i].as_name,
         "sign_id": sos[i].sign_id,
         "accept_name": sos[i].accept_name,
         "category": sos[i].category,
@@ -118,6 +119,7 @@ app.get("/get-history-agent-sos/:is_confirm/:user_accept_id", async (req, res) =
           "name": sos[i].sender_name,
           "fcm": sos[i].sender_fcm
         },
+        "as_name": sos[i].as_name,
         "sign_id": sos[i].sign_id,
         "accept_name": sos[i].accept_name,
         "category": sos[i].category,
@@ -151,6 +153,7 @@ app.get("/get-history-sos/:is_confirm/:user_accept_id", async (req, res) => {
           "name": sos[i].sender_name,
           "fcm": sos[i].sender_fcm
         },
+        "as_name": sos[i].as_name,
         "sign_id": sos[i].sign_id,
         "accept_name": sos[i].accept_name,
         "category": sos[i].category,
@@ -595,7 +598,7 @@ function storeSosConfirm(sosId, userId) {
 
 function getHistorySos(confirm, userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, a.media_url_phone, a.as_name, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, b.as_name, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
@@ -616,7 +619,7 @@ function getHistorySos(confirm, userId) {
 
 function getHistoryAgentSos(confirm, userAcceptId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, a.media_url_phone, a.as_name, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, b.as_name, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
@@ -637,7 +640,7 @@ function getHistoryAgentSos(confirm, userAcceptId) {
 
 function getAgentSos(confirm) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, a.media_url_phone, a.as_name, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, b.as_name, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
