@@ -452,7 +452,8 @@ function getSos(offset, limit, userId) {
     a.duration, 
     a.created_at, 
     a.updated_at, 
-    b.fullname
+    b.fullname,
+    b.phone_number
     FROM sos a 
     INNER JOIN users b ON a.user_id = b.user_id 
     WHERE a.user_id = '${userId}'
@@ -482,7 +483,8 @@ function getAllSos(offset, limit) {
     a.duration, 
     a.created_at, 
     a.updated_at, 
-    b.fullname
+    b.fullname,
+    b.phone_number
     FROM sos a 
     INNER JOIN users b ON a.user_id = b.user_id 
     ORDER BY a.created_at DESC LIMIT ${offset}, ${limit}`
