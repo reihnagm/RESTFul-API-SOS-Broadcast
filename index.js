@@ -278,11 +278,13 @@ app.post("/store-sos", async (req, res) => {
     let userName = req.body.username
     let userId = req.body.user_id
 
+    var seq = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
+
     await storeSos(
       id, category, media_url, media_url_phone, 
       desc, status, 
       lat, lng, address,
-      duration, thumbnail, userId
+      duration, thumbnail, userId, seq
     )
 
     try {
@@ -558,11 +560,12 @@ function getSosTotal() {
   })
 }
 
-function storeSos(uid, category, media_url, media_url_phone, content, status, lat, lng, address, duration, thumbnail, userId) {
+function storeSos(uid, category, media_url, media_url_phone, content, status, lat, lng, address, duration, thumbnail, userId, signId) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO sos (uid, category, media_url, 
-    media_url_phone, content, lat, lng, address, status, duration, thumbnail, user_id) 
-    VALUES ('${uid}', '${category}', '${media_url}', '${media_url_phone}', '${content}', '${lat}', '${lng}', '${address}', '${status}', '${duration}', '${thumbnail}', '${userId}')`
+    const query = `
+    REPLACE INTO sos (uid, category, media_url, 
+    media_url_phone, content, lat, lng, address, status, duration, thumbnail, user_id, sign_id) 
+    VALUES ('${uid}', '${category}', '${media_url}', '${media_url_phone}', '${content}', '${lat}', '${lng}', '${address}', '${status}', '${duration}', '${thumbnail}', '${userId}', '${signId}')`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
@@ -589,7 +592,7 @@ function storeSosConfirm(sosId, userId) {
 
 function getHistorySos(confirm, userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, a.media_url_phone, a.thumbnail, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
@@ -610,7 +613,7 @@ function getHistorySos(confirm, userId) {
 
 function getHistoryAgentSos(confirm, userAcceptId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, a.media_url_phone, a.thumbnail, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
@@ -631,7 +634,7 @@ function getHistoryAgentSos(confirm, userAcceptId) {
 
 function getAgentSos(confirm) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, a.media_url_phone, a.thumbnail, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
