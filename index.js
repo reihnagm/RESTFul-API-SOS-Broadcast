@@ -670,7 +670,7 @@ function getAgentSos(confirm) {
     LEFT JOIN users d ON b.user_accept_id = d.user_id 
     LEFT JOIN fcm f ON f.uid = a.user_id
     INNER JOIN users c ON a.user_id = c.user_id 
-    WHERE b.is_confirm = '${confirm}' OR b.is_confirm = '2' 
+    WHERE b.is_confirm = '${confirm}'
     ORDER BY a.id DESC`
     conn.query(query, (e, res) => {
       if(e) {
