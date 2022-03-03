@@ -83,9 +83,11 @@ app.get("/get-agent-sos/:is_confirm", async (req, res) => {
       arr.push({
         "uid": sos[i].uid,
         "sender": {
+          "id": sos[i].sender_id,
           "name": sos[i].sender_name,
           "fcm": sos[i].sender_fcm
         },
+        "is_confirm": sos[i].is_confirm,
         "as_name": sos[i].as_name,
         "sign_id": sos[i].sign_id,
         "accept_name": sos[i].accept_name,
@@ -117,9 +119,11 @@ app.get("/get-history-agent-sos/:is_confirm/:user_accept_id", async (req, res) =
       arr.push({
         "uid": sos[i].uid,
         "sender": {
+          "id": sos[i].sender_id,
           "name": sos[i].sender_name,
           "fcm": sos[i].sender_fcm
         },
+        "is_confirm": sos[i].is_confirm,
         "as_name": sos[i].as_name,
         "sign_id": sos[i].sign_id,
         "accept_name": sos[i].accept_name,
@@ -151,9 +155,11 @@ app.get("/get-history-sos/:is_confirm/:user_accept_id", async (req, res) => {
       arr.push({
         "uid": sos[i].uid,
         "sender": {
+          "id": sos[i].sender_id,
           "name": sos[i].sender_name,
           "fcm": sos[i].sender_fcm
         },
+        "is_confirm": sos[i].is_confirm,
         "as_name": sos[i].as_name,
         "sign_id": sos[i].sign_id,
         "accept_name": sos[i].accept_name,
@@ -180,6 +186,19 @@ app.put("/accept-sos", async (req, res) => {
     let sosId = req.body.sos_id
     let userAcceptId = req.body.user_accept_id
     await acceptSosConfirm(sosId, userAcceptId)
+    return res.json({
+      "status": res.statusCode
+    })
+  } catch(e) {
+    console.log(e)
+  }
+})
+
+app.put("/finish-sos", async (req, res) => {
+  try {
+    let sosId = req.body.sos_id
+    let userAcceptId = req.body.user_accept_id
+    await finishSosConfirm(sosId, userAcceptId)
     return res.json({
       "status": res.statusCode
     })
@@ -598,7 +617,7 @@ function storeSosConfirm(sosId, userId) {
 
 function getHistorySos(confirm, userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, a.media_url_phone, b.as_name, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, b.is_confirm, b.as_name, a.thumbnail, a.sign_id, c.user_id sender_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
@@ -619,7 +638,7 @@ function getHistorySos(confirm, userId) {
 
 function getHistoryAgentSos(confirm, userAcceptId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, a.media_url_phone, b.as_name, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, b.is_confirm, b.as_name, a.thumbnail, a.sign_id, c.user_id sender_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
@@ -640,7 +659,7 @@ function getHistoryAgentSos(confirm, userAcceptId) {
 
 function getAgentSos(confirm) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.uid, a.media_url_phone, b.as_name, a.thumbnail, a.sign_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    const query = `SELECT a.uid, a.media_url_phone, b.is_confirm, b.as_name, a.thumbnail, a.sign_id, c.user_id sender_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
     a.lng, a.address, a.created_at FROM sos a 
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
@@ -649,6 +668,19 @@ function getAgentSos(confirm) {
     INNER JOIN users c ON a.user_id = c.user_id 
     WHERE b.is_confirm = '${confirm}' 
     ORDER BY a.id DESC`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e)) 
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
+function finishSosConfirm(sosId, userAcceptId) {
+  return new Promise((resolve, reject) => {
+    const query = `UPDATE sos_confirms SET is_confirm = 2, user_accept_id = '${userAcceptId}' WHERE sos_uid = '${sosId}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
