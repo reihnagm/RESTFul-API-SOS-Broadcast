@@ -393,6 +393,7 @@ app.get("/inbox/:user_id", async (req, res) => {
         "uid": inboxes[i].uid,
         "is_read": inboxes[i].is_read,
         "title": inboxes[i].title,
+        "type": inboxes[i].type,
         "media_url": inboxes[i].media_url,
         "thumbnail": inboxes[i].thumbnail,
         "content": inboxes[i].content,
