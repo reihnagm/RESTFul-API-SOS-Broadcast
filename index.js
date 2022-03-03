@@ -738,7 +738,7 @@ function getInboxTotalUnread(userId) {
 
 function getInbox(offset, limit, userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM inboxes WHERE user_id='${userId}' LIMIT ${offset}, ${limit}`
+    const query = `SELECT * FROM inboxes WHERE user_id='${userId}' LIMIT ${offset}, ${limit} ORDER BY id DESC`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
