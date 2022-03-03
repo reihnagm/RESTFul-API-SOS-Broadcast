@@ -625,8 +625,10 @@ function getHistorySos(confirm, userId) {
     LEFT JOIN users d ON b.user_accept_id = d.user_id 
     LEFT JOIN fcm f ON f.uid = a.user_id
     INNER JOIN users c ON a.user_id = c.user_id 
-    WHERE b.is_confirm = '${confirm}' 
-    AND a.user_id = '${userId}'`
+    WHERE b.is_confirm = '${confirm}' OR b.is_confirm = '2' 
+    AND a.user_id = '${userId}'
+    ORDER BY a.id DESC
+    `
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
@@ -646,8 +648,9 @@ function getHistoryAgentSos(confirm, userAcceptId) {
     LEFT JOIN users d ON b.user_accept_id = d.user_id 
     LEFT JOIN fcm f ON f.uid = a.user_id
     INNER JOIN users c ON a.user_id = c.user_id 
-    WHERE b.is_confirm = '${confirm}' 
-    AND b.user_accept_id = '${userAcceptId}'`
+    WHERE b.is_confirm = '${confirm}' OR b.is_confirm = '2'  
+    AND b.user_accept_id = '${userAcceptId}'
+    ORDER BY a.id DESC`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
@@ -667,7 +670,7 @@ function getAgentSos(confirm) {
     LEFT JOIN users d ON b.user_accept_id = d.user_id 
     LEFT JOIN fcm f ON f.uid = a.user_id
     INNER JOIN users c ON a.user_id = c.user_id 
-    WHERE b.is_confirm = '${confirm}' 
+    WHERE b.is_confirm = '${confirm}' OR b.is_confirm = '2' 
     ORDER BY a.id DESC`
     conn.query(query, (e, res) => {
       if(e) {
