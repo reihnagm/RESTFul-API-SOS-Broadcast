@@ -209,7 +209,7 @@ app.put("/finish-sos", async (req, res) => {
 
 app.get("/get-sos/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
-  let show = parseInt(req.query.show) || 30  
+  let show = parseInt(req.query.show) || 10  
   let offset  = (page - 1) * show
   let total = await getSosTotal()
   let resultTotal = Math.ceil(total / show) 
@@ -228,6 +228,7 @@ app.get("/get-sos/:user_id", async (req, res) => {
           "media_url": sos[i]["media_url"],
           "media_url_phone": sos[i]["media_url_phone"],
           "thumbnail": sos[i]["thumbnail"],
+          "sign_id": sos[i]["sign_id"],
           "content": sos[i]["content"],
           "lat": sos[i]["lat"],
           "lng": sos[i]["lng"],
@@ -263,6 +264,7 @@ app.get("/get-sos/:user_id", async (req, res) => {
         "media_url": sos[i]["media_url"],
         "media_url_phone": sos[i]["media_url_phone"],
         "thumbnail": sos[i]["thumbnail"],
+        "sign_id": sos[i]["sign_id"],
         "content": sos[i]["content"],
         "lat": sos[i]["lat"],
         "lng": sos[i]["lng"],
@@ -518,7 +520,8 @@ function getSos(offset, limit, userId) {
     a.category, 
     a.media_url, 
     a.media_url_phone,
-    a.thumbnail, 
+    a.thumbnail,
+    a.sign_id, 
     a.content, 
     a.lat, 
     a.lng, 
@@ -550,6 +553,7 @@ function getAllSos(offset, limit) {
     a.media_url, 
     a.media_url_phone,
     a.thumbnail, 
+    a.sign_id,
     a.content, 
     a.lat, 
     a.lng, 
@@ -627,8 +631,7 @@ function getHistorySos(confirm, userId) {
     INNER JOIN users c ON a.user_id = c.user_id 
     WHERE b.is_confirm = '${confirm}' OR b.is_confirm = '2' 
     AND a.user_id = '${userId}'
-    ORDER BY a.id DESC
-    `
+    ORDER BY a.id DESC`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
