@@ -145,11 +145,19 @@ app.get("/get-history-agent-sos/:is_confirm/:user_accept_id", async (req, res) =
   }
 })
 
-app.get("/get-history-sos/:is_confirm/:user_accept_id", async (req, res) => {
+app.get("/get-history-sos/:is_confirm/:user_id", async (req, res) => {
   try {
+    let page = parseInt(req.query.page) || 1
+    let show = parseInt(req.query.show) || 10  
     let isConfirm = req.params.is_confirm
-    let userAcceptId = req.params.user_accept_id
-    let sos = await getHistorySos(isConfirm, userAcceptId)
+    let userId = req.params.user_id
+    let offset  = (page - 1) * show
+    let total = await getHistorySosTotal(userId)
+    let resultTotal = Math.ceil(total / show) 
+    let perPage = Math.ceil(resultTotal / show) 
+    let prevPage = page === 1 ? 1 : page - 1
+    let nextPage = page === perPage ? 1 : page + 1
+    let sos = await getHistorySos(offset, show, isConfirm, userId)
     let arr = []
     for(let i = 0; i < sos.length; i++) {
       arr.push({
@@ -175,6 +183,13 @@ app.get("/get-history-sos/:is_confirm/:user_accept_id", async (req, res) => {
     }
     return res.json({
       "data": arr,
+      "total": total,
+      "perPage": perPage,
+      "nextPage": nextPage,
+      "prevPage": prevPage,
+      "currentPage": page,
+      "nextUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
+      "prevUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
     })
   } catch(e) {
     console.log(e)
@@ -620,7 +635,7 @@ function storeSosConfirm(sosId, userId) {
   })
 }
 
-function getHistorySos(confirm, userId) {
+function getHistorySos(offset, limit, confirm, userId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT a.uid, a.media_url_phone, b.is_confirm, b.as_name, a.thumbnail, a.sign_id, c.user_id sender_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
@@ -631,12 +646,28 @@ function getHistorySos(confirm, userId) {
     INNER JOIN users c ON a.user_id = c.user_id 
     WHERE b.is_confirm = '${confirm}' OR b.is_confirm = '2' 
     AND a.user_id = '${userId}'
-    ORDER BY a.id DESC`
+    ORDER BY a.id DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
       } else {
         resolve(res)
+      }
+    })
+  })
+}
+
+function getHistorySosTotal(userId) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT COUNT(*) AS total FROM sos a
+    LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
+    WHERE is_confirm = '1' OR is_confirm = '2'
+    AND a.user_id = '${userId}'`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {  
+        resolve(res[0].total)
       }
     })
   })
