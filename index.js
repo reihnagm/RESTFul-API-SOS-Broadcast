@@ -393,7 +393,7 @@ app.post("/init-fcm", async (req, res) => {
 
 app.get("/inbox/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
-  let show = parseInt(req.query.show) || 30  
+  let show = parseInt(req.query.show) || 10  
   let offset  = (page - 1) * show
   let total = await getInboxTotal()
   let resultTotal = Math.ceil(total / show) 
@@ -418,10 +418,8 @@ app.get("/inbox/:user_id", async (req, res) => {
         "updated_at": moment(inboxes[i].created_at).format('MMMM Do YYYY, h:mm:ss')
       })
     }
-    let totalUnread =  await getInboxTotalUnread(userId);
     return res.json({
       "data": inboxesAssign,
-      "total_unread": totalUnread.length,
       "total": total,
       "perPage": perPage,
       "nextPage": nextPage,
@@ -434,6 +432,14 @@ app.get("/inbox/:user_id", async (req, res) => {
     console.log(e)
   }
 });
+
+app.get("/inbox/count/:user_id", async(req, res) => {
+  let userId = req.params.user_id
+  let totalUnread =  await getInboxTotalUnread(userId);
+  return res.json({
+    "total_unread": totalUnread
+  })
+})
 
 app.post("/inbox/store", async (req, res) => {
   let uid = req.body.uid 
@@ -759,12 +765,12 @@ function getInboxTotal() {
 
 function getInboxTotalUnread(userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM inboxes WHERE is_read = 0 AND user_id = '${userId}'`
+    const query = `SELECT COUNT(*) AS total FROM inboxes WHERE is_read = 0 AND user_id = '${userId}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
       } else {
-        resolve(res)
+        resolve(res[0].total)
       }
     })
   })
