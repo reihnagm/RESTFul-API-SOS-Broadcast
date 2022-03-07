@@ -77,7 +77,7 @@ app.use(express.urlencoded({ extended: true }))
 app.get("/get-agent-sos/:is_confirm", async (req, res) => {
   try {
     let page = parseInt(req.query.page) || 1
-    let show = parseInt(req.query.show) || 10  
+    let show = parseInt(req.query.show) || 30  
     let isConfirm = req.params.is_confirm
     let offset  = (page - 1) * show
     let total = await getAgentSosTotal(isConfirm)
@@ -925,7 +925,9 @@ function storeContact(uid, name, identifier, userId) {
 
 function getFcm() {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.*, b.fullname FROM fcm a INNER JOIN users b ON a.uid = b.user_id`
+    const query = `SELECT a.*, IFNULL(b.fullname, '-') fullname FROM 
+    fcm a LEFT JOIN users b 
+    ON a.uid = b.user_id`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
