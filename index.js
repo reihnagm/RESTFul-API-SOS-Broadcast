@@ -486,11 +486,15 @@ app.post("/inbox/store", async (req, res) => {
   let type = req.body.type
   let userId = req.body.user_id
   
-  await inboxStore(
-    uid, title, 
-    content, thumbnail, 
-    mediaUrl, type, userId
-  )
+  let totalCheckInboxCount = await checkInbox()
+
+  if(totalCheckInboxCount != 1) {
+    await inboxStore(
+      uid, title, 
+      content, thumbnail, 
+      mediaUrl, type, userId
+    )
+  }
 
   res.json({
     "status": res.statusCode
@@ -812,6 +816,7 @@ function acceptSosConfirm(sosId, userAcceptId) {
       if(e) {
         reject(new Error(e)) 
       } else {
+        console.log(res.changedRows)
         resolve(res.changedRows)
       }
     })
@@ -859,9 +864,22 @@ function getInbox(offset, limit, userId) {
   })
 }
 
+function checkInbox(title) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT COUNT(*) AS total FROM inboxes WHERE title = '${title}'`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0].total)
+      }
+    })
+  })
+}
+
 function inboxStore(uid, title, content, thumbnail, mediaUrl, type, userId) {
   return new Promise((resolve, reject) => {
-    const query = `REPLACE INTO inboxes (uid, title, content, thumbnail, media_url, is_read, type, user_id) 
+    const query = `INSERT INTO inboxes (uid, title, content, thumbnail, media_url, is_read, type, user_id) 
     VALUES ('${uid}', '${title}', '${content}', '${thumbnail}', '${mediaUrl}', 0,
     '${type}' ,'${userId}')`
     conn.query(query, (e, res) => {
