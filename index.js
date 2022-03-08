@@ -736,7 +736,6 @@ function getHistoryAgentSos(offset, limit, confirm, userAcceptId) {
     LEFT JOIN users d ON b.user_accept_id = d.user_id 
     LEFT JOIN fcm f ON f.uid = a.user_id
     INNER JOIN users c ON a.user_id = c.user_id 
-    WHERE b.is_confirm = '${confirm}' OR b.is_confirm = '2'  
     AND b.user_accept_id = '${userAcceptId}'
     ORDER BY a.id DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
