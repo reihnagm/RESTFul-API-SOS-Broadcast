@@ -925,8 +925,8 @@ function storeContact(uid, name, identifier, userId) {
 
 function getFcm() {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.*, IFNULL(b.fullname, '-') fullname FROM 
-    fcm a LEFT JOIN users b 
+    const query = `SELECT a.*, b.role, IFNULL(b.fullname, '-') fullname 
+    FROM fcm a LEFT JOIN users b 
     ON a.uid = b.user_id`
     conn.query(query, (e, res) => {
       if(e) {
