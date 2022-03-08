@@ -477,8 +477,8 @@ app.get("/inbox/count/:user_id", async(req, res) => {
   })
 })
 
-app.get("/inbox/check/:title", async(req, res) => {
-  let title = req.params.title
+app.post("/inbox/check", async(req, res) => {
+  let title = req.body.title
   let totalCheckInbox = await checkInbox(title)
   res.json({
     "total": totalCheckInbox 
