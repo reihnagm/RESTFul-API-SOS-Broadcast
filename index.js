@@ -486,7 +486,7 @@ app.post("/inbox/store", async (req, res) => {
   let type = req.body.type
   let userId = req.body.user_id
   
-  let totalCheckInboxCount = await checkInbox()
+  let totalCheckInboxCount = await checkInbox(title)
 
   if(totalCheckInboxCount != 1) {
     await inboxStore(
