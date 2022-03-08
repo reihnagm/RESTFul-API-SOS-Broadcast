@@ -230,10 +230,16 @@ app.put("/accept-sos", async (req, res) => {
   try {
     let sosId = req.body.sos_id
     let userAcceptId = req.body.user_accept_id
-    await acceptSosConfirm(sosId, userAcceptId)
-    return res.json({
-      "status": res.statusCode
-    })
+    let affected = await acceptSosConfirm(sosId, userAcceptId)
+    if(affected > 0) {
+      return res.json({
+        "status": res.statusCode
+      })
+    } else {
+      return res.json({
+        "status": 400
+      })
+    }
   } catch(e) {
     console.log(e)
   }
@@ -806,8 +812,7 @@ function acceptSosConfirm(sosId, userAcceptId) {
       if(e) {
         reject(new Error(e)) 
       } else {
-        console.log()
-        resolve(res)
+        resolve(res.changedRows)
       }
     })
   })
