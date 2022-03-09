@@ -975,9 +975,14 @@ function storeContact(uid, name, identifier, userId) {
 
 function getFcm() {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.*, b.role, IFNULL(b.fullname, '-') fullname 
-    FROM fcm a LEFT JOIN users b 
-    ON a.uid = b.user_id`
+    const query = `SELECT c.id, c.uid, a.role, IFNULL(a.fullname, '-') fullname,  c.fcm_secret, c.lat, c.lng, c.created_at, c.updated_at 
+    FROM users a
+    LEFT JOIN sos_confirms b
+    ON a.user_id = b.user_accept_id
+    INNER JOIN fcm c 
+    ON c.uid = b.user_accept_id 
+    WHERE b.is_confirm NOT IN (SELECT is_confirm FROM sos_confirms WHERE is_confirm = 1)
+    AND a.role = "agent"`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
