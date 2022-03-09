@@ -124,11 +124,10 @@ app.get("/get-agent-sos/:is_confirm", async (req, res) => {
   }
 })
 
-app.get("/get-history-agent-sos/:is_confirm/:user_accept_id", async (req, res) => {
+app.get("/get-history-agent-sos/:user_accept_id", async (req, res) => {
   try {
     let page = parseInt(req.query.page) || 1
     let show = parseInt(req.query.show) || 10  
-    let isConfirm = req.params.is_confirm
     let userAcceptId = req.params.user_accept_id
     let offset  = (page - 1) * show
     let total = await getHistoryAgentSosTotal(userAcceptId)
@@ -136,7 +135,7 @@ app.get("/get-history-agent-sos/:is_confirm/:user_accept_id", async (req, res) =
     let perPage = Math.ceil(resultTotal / show) 
     let prevPage = page === 1 ? 1 : page - 1
     let nextPage = page === perPage ? 1 : page + 1
-    let sos = await getHistoryAgentSos(offset, show, isConfirm, userAcceptId)
+    let sos = await getHistoryAgentSos(offset, show, userAcceptId)
     let arr = []
     for(let i = 0; i < sos.length; i++) {
       arr.push({
@@ -357,6 +356,7 @@ app.post("/store-sos", async (req, res) => {
     let thumbnail = req.body.thumbnail
     let userName = req.body.username
     let userId = req.body.user_id
+    
 
     await storeSos(
       id, category, media_url, media_url_phone, 
@@ -659,6 +659,23 @@ function getSosTotal() {
   })
 }
 
+function checkSosAgentProcess() {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT a.* FROM users a
+    JOIN sos_confirms b
+    ON a.user_id = b.user_accept_id
+    WHERE is_confirm NOT IN (SELECT is_confirm FROM sos_confirms WHERE is_confirm = 1)
+    AND a.role = "agent`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
 function storeSos(uid, category, media_url, media_url_phone, content, status, lat, lng, address, duration, thumbnail, userId, signId) {
   return new Promise((resolve, reject) => {
     const query = `
@@ -727,7 +744,7 @@ function getHistorySosTotal(userId) {
   })
 }
 
-function getHistoryAgentSos(offset, limit, confirm, userAcceptId) {
+function getHistoryAgentSos(offset, limit, userAcceptId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT a.uid, a.media_url_phone, b.is_confirm, b.as_name, a.thumbnail, a.sign_id, c.user_id sender_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
     IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
