@@ -74,17 +74,18 @@ app.use(express.urlencoded({ extended: true }))
 
 // SOS
 
-app.get("/get-agent-sos", async (req, res) => {
+app.get("/get-agent-sos/:user_id", async (req, res) => {
   try {
     let page = parseInt(req.query.page) || 1
     let show = parseInt(req.query.show) || 30  
+    let userId = req.params.user_id
     let offset  = (page - 1) * show
     let total = await getAgentSosTotal()
     let resultTotal = Math.ceil(total / show) 
     let perPage = Math.ceil(resultTotal / show) 
     let prevPage = page === 1 ? 1 : page - 1
     let nextPage = page === perPage ? 1 : page + 1
-    let sos = await getAgentSos(offset, show)
+    let sos = await getAgentSos(offset, show, userId)
     let arr = []
     for(let i = 0; i < sos.length; i++) {
       arr.push({
