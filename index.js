@@ -780,14 +780,14 @@ function getHistoryAgentSosTotal(userId) {
   })
 }
 
-function getAgentSos(offset, limit) {
+function getAgentSos(offset, limit, userId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT s.uid, s.media_url_phone, sc.is_confirm, sc.as_name, 
     s.thumbnail, s.sign_id, us.user_id sender_id,
     us.fullname sender_name, f.fcm_secret sender_fcm, u.fullname accept_name,
     s.category, s.content, s.lat, s.lng, s.address, s.created_at
     FROM sos s 
-    INNER JOIN users u ON u.user_id = '4a557994-067e-4f05-8787-ff49b229fb3a' -- dapet dr login
+    INNER JOIN users u ON u.user_id = '${userId}'
     INNER JOIN sos_confirms sc ON sc.sos_uid  = s.uid
     INNER JOIN users us ON sc.user_sender_id = us.user_id 
     INNER JOIN fcm f ON us.user_id  = f.uid
@@ -981,7 +981,8 @@ function getFcm() {
   return new Promise((resolve, reject) => {
     const query = `SELECT a.*, b.role, IFNULL(b.fullname, '-') fullname 
     FROM fcm a LEFT JOIN users b 
-    ON a.uid = b.user_id`
+    ON a.uid = b.user_id
+    WHERE a.uid NOT IN (SELECT sc.user_accept_id FROM sos_confirms sc WHERE sc.is_confirm = 1)`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
@@ -991,6 +992,7 @@ function getFcm() {
     })
   })
 }
+
 
 function initFcm(uid, fcmSecret, lat, lng) {
   return new Promise((resolve, reject) => {
