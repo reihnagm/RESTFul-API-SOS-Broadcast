@@ -496,7 +496,15 @@ app.post("/inbox/store", async (req, res) => {
   
   let totalCheckInboxCount = await checkInbox(title)
 
-  if(totalCheckInboxCount != 1) {
+  if(type != "info") {
+    if(totalCheckInboxCount != 1) {
+      await inboxStore(
+        uid, title, 
+        content, thumbnail, 
+        mediaUrl, type, userId
+      )
+    }
+  } else {
     await inboxStore(
       uid, title, 
       content, thumbnail, 
