@@ -782,31 +782,20 @@ function getHistoryAgentSosTotal(userId) {
 
 function getAgentSos(offset, limit) {
   return new Promise((resolve, reject) => {
-    // const query = `SELECT b.sos_uid uid, b.user_sender_id sender_id, 
-    // k.fullname sender_name, f.fcm_secret sender_fcm, a.fullname accept_name, b.is_confirm, 
-    // b.as_name, s.sign_id, s.category, s.content, s.media_url_phone,
-    // s.thumbnail, s.lat, s.lng, s.address, s.created_at  
-    // FROM users a
-    // LEFT JOIN sos_confirms b
-    // ON a.user_id = b.user_accept_id
-    // INNER JOIN fcm f 
-    // ON f.uid = b.user_sender_id  
-    // INNER JOIN sos s 
-    // ON s.uid = b.sos_uid 
-    // INNER JOIN users k 
-    // ON k.user_id  = b.user_sender_id  
-    // WHERE b.is_confirm NOT IN (1, 2)
-    // AND a.role = "agent" 
-    // ORDER BY s.id DESC LIMIT ${offset}, ${limit}`
-    const query = `SELECT a.uid, a.media_url_phone, b.is_confirm, b.as_name, a.thumbnail, a.sign_id, c.user_id sender_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
-    IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
-    a.lng, a.address, a.created_at FROM sos a 
-    LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
-    LEFT JOIN users d ON b.user_accept_id = d.user_id 
-    LEFT JOIN fcm f ON f.uid = a.user_id
-    INNER JOIN users c ON a.user_id = c.user_id 
-    WHERE b.is_confirm = '0'
-    ORDER BY a.id DESC LIMIT ${offset}, ${limit}`
+    const query = `SELECT s.uid, s.media_url_phone, sc.is_confirm, sc.as_name, 
+    s.thumbnail, s.sign_id, us.user_id sender_id,
+    us.fullname sender_name, f.fcm_secret sender_fcm, u.fullname accept_name,
+    s.category, s.content, s.lat, s.lng, s.address, s.created_at
+    FROM sos s 
+    INNER JOIN users u ON u.user_id = '4a557994-067e-4f05-8787-ff49b229fb3a' -- dapet dr login
+    INNER JOIN sos_confirms sc ON sc.sos_uid  = s.uid
+    INNER JOIN users us ON sc.user_sender_id = us.user_id 
+    INNER JOIN fcm f ON us.user_id  = f.uid
+    WHERE u.role = 'agent'
+    AND u.user_id NOT IN (SELECT sc2.user_accept_id FROM sos_confirms sc2 
+    WHERE sc2.is_confirm = 1)
+    AND sc.is_confirm = 0
+    ORDER BY s.id DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
