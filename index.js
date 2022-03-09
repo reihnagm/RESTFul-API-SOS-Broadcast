@@ -399,17 +399,6 @@ app.post("/store-sos", async (req, res) => {
 
 // FCM
 
-app.get("/get-fcm", async (req, res) => {
-  try {
-    const fcmSecret = await getFcm()
-    return res.json({
-      "data": fcmSecret
-    })
-  } catch(e) {
-    console.log(e)
-  }
-})
-
 app.post("/init-fcm", async (req, res) => {
   let userId = req.body.user_id
   let fcmSecret = req.body.fcm_secret
@@ -422,6 +411,17 @@ app.post("/init-fcm", async (req, res) => {
     "lat": lat,
     "lng": lng
   })
+})
+
+app.get("/get-fcm", async (req, res) => {
+  try {
+    const fcmSecret = await getFcm()
+    return res.json({
+      "data": fcmSecret
+    })
+  } catch(e) {
+    console.log(e)
+  }
 })
 
 // INBOX
@@ -782,31 +782,31 @@ function getHistoryAgentSosTotal(userId) {
 
 function getAgentSos(offset, limit) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT b.sos_uid uid, b.user_sender_id sender_id, 
-    k.fullname sender_name, f.fcm_secret sender_fcm, a.fullname accept_name, b.is_confirm, 
-    b.as_name, s.sign_id, s.category, s.content, s.media_url_phone,
-    s.thumbnail, s.lat, s.lng, s.address, s.created_at  
-    FROM users a
-    LEFT JOIN sos_confirms b
-    ON a.user_id = b.user_accept_id
-    INNER JOIN fcm f 
-    ON f.uid = b.user_sender_id  
-    INNER JOIN sos s 
-    ON s.uid = b.sos_uid 
-    INNER JOIN users k 
-    ON k.user_id  = b.user_sender_id  
-    WHERE b.is_confirm NOT IN (1, 2)
-    AND a.role = "agent" 
-    ORDER BY s.id DESC LIMIT ${offset}, ${limit}`
-    // const query = `SELECT a.uid, a.media_url_phone, b.is_confirm, b.as_name, a.thumbnail, a.sign_id, c.user_id sender_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
-    // IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
-    // a.lng, a.address, a.created_at FROM sos a 
-    // LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
-    // LEFT JOIN users d ON b.user_accept_id = d.user_id 
-    // LEFT JOIN fcm f ON f.uid = a.user_id
-    // INNER JOIN users c ON a.user_id = c.user_id 
-    // WHERE b.is_confirm = '${confirm}'
-    // ORDER BY a.id DESC LIMIT ${offset}, ${limit}`
+    // const query = `SELECT b.sos_uid uid, b.user_sender_id sender_id, 
+    // k.fullname sender_name, f.fcm_secret sender_fcm, a.fullname accept_name, b.is_confirm, 
+    // b.as_name, s.sign_id, s.category, s.content, s.media_url_phone,
+    // s.thumbnail, s.lat, s.lng, s.address, s.created_at  
+    // FROM users a
+    // LEFT JOIN sos_confirms b
+    // ON a.user_id = b.user_accept_id
+    // INNER JOIN fcm f 
+    // ON f.uid = b.user_sender_id  
+    // INNER JOIN sos s 
+    // ON s.uid = b.sos_uid 
+    // INNER JOIN users k 
+    // ON k.user_id  = b.user_sender_id  
+    // WHERE b.is_confirm NOT IN (1, 2)
+    // AND a.role = "agent" 
+    // ORDER BY s.id DESC LIMIT ${offset}, ${limit}`
+    const query = `SELECT a.uid, a.media_url_phone, b.is_confirm, b.as_name, a.thumbnail, a.sign_id, c.user_id sender_id, c.fullname sender_name, f.fcm_secret sender_fcm, 
+    IFNULL(d.fullname, '-') accept_name, a.category, a.content, a.lat, 
+    a.lng, a.address, a.created_at FROM sos a 
+    LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
+    LEFT JOIN users d ON b.user_accept_id = d.user_id 
+    LEFT JOIN fcm f ON f.uid = a.user_id
+    INNER JOIN users c ON a.user_id = c.user_id 
+    WHERE b.is_confirm = '0'
+    ORDER BY a.id DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
@@ -817,11 +817,11 @@ function getAgentSos(offset, limit) {
   })
 }
 
-function getAgentSosTotal(confirm) {
+function getAgentSosTotal() {
   return new Promise((resolve, reject) => {
     const query = `SELECT COUNT(*) AS total FROM sos a
     LEFT JOIN sos_confirms b ON a.uid = b.sos_uid
-    WHERE b.is_confirm = '${confirm}'`
+    WHERE b.is_confirm = 0`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
@@ -990,14 +990,9 @@ function storeContact(uid, name, identifier, userId) {
 
 function getFcm() {
   return new Promise((resolve, reject) => {
-    const query = `SELECT c.id, c.uid, a.role, IFNULL(a.fullname, '-') fullname,  c.fcm_secret, c.lat, c.lng, c.created_at, c.updated_at 
-    FROM users a
-    LEFT JOIN sos_confirms b
-    ON a.user_id = b.user_accept_id
-    INNER JOIN fcm c 
-    ON c.uid = b.user_accept_id 
-    WHERE b.is_confirm NOT IN (SELECT is_confirm FROM sos_confirms WHERE is_confirm = 1)
-    AND a.role = "agent"`
+    const query = `SELECT a.*, b.role, IFNULL(b.fullname, '-') fullname 
+    FROM fcm a LEFT JOIN users b 
+    ON a.uid = b.user_id`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
