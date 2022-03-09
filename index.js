@@ -79,7 +79,7 @@ app.get("/get-agent-sos", async (req, res) => {
     let page = parseInt(req.query.page) || 1
     let show = parseInt(req.query.show) || 30  
     let offset  = (page - 1) * show
-    let total = await getAgentSosTotal(isConfirm)
+    let total = await getAgentSosTotal()
     let resultTotal = Math.ceil(total / show) 
     let perPage = Math.ceil(resultTotal / show) 
     let prevPage = page === 1 ? 1 : page - 1
