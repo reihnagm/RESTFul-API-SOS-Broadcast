@@ -82,7 +82,7 @@ app.get("/get-agent-sos/:user_id", async (req, res) => {
     let offset  = (page - 1) * show
     let total = await getAgentSosTotal()
     let resultTotal = Math.ceil(total / show) 
-    let perPage = Math.ceil(resultTotal / show) 
+    let perPage = Math.ceil(show / resultTotal) 
     let prevPage = page === 1 ? 1 : page - 1
     let nextPage = page === perPage ? 1 : page + 1
     let sos = await getAgentSos(offset, show, userId)
@@ -132,7 +132,7 @@ app.get("/get-history-agent-sos/:user_accept_id", async (req, res) => {
     let offset  = (page - 1) * show
     let total = await getHistoryAgentSosTotal(userAcceptId)
     let resultTotal = Math.ceil(total / show) 
-    let perPage = Math.ceil(resultTotal / show) 
+    let perPage = Math.ceil(show / resultTotal) 
     let prevPage = page === 1 ? 1 : page - 1
     let nextPage = page === perPage ? 1 : page + 1
     let sos = await getHistoryAgentSos(offset, show, userAcceptId)
@@ -183,7 +183,7 @@ app.get("/get-history-sos/:is_confirm/:user_id", async (req, res) => {
     let offset  = (page - 1) * show
     let total = await getHistorySosTotal(userId)
     let resultTotal = Math.ceil(total / show) 
-    let perPage = Math.ceil(resultTotal / show) 
+    let perPage = Math.ceil(show / resultTotal) 
     let prevPage = page === 1 ? 1 : page - 1
     let nextPage = page === perPage ? 1 : page + 1
     let sos = await getHistorySos(offset, show, isConfirm, userId)
@@ -263,7 +263,7 @@ app.get("/get-sos/:user_id", async (req, res) => {
   let offset  = (page - 1) * show
   let total = await getSosTotal()
   let resultTotal = Math.ceil(total / show) 
-  let perPage = Math.ceil(resultTotal / show) 
+  let perPage = Math.ceil(show / resultTotal) 
   let prevPage = page === 1 ? 1 : page - 1
   let nextPage = page === perPage ? 1 : page + 1
   if(req.params.user_id != "all") {
@@ -430,16 +430,16 @@ app.get("/get-fcm", async (req, res) => {
 app.get("/inbox/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
   let show = parseInt(req.query.show) || 10  
+  let userId = req.params.user_id
   let type = req.query.type
   let offset  = (page - 1) * show
-  let total = await getInboxTotal(type)
+  let total = await getInboxTotal(userId, type)
   let resultTotal = Math.ceil(total / show) 
-  let perPage = Math.ceil(resultTotal / show) 
+  let perPage = Math.ceil(show / resultTotal) 
   let prevPage = page === 1 ? 1 : page - 1
   let nextPage = page === perPage ? 1 : page + 1
  
   try {
-    let userId = req.params.user_id
     let inboxes = await getInbox(offset, show, userId, type)
     let inboxesAssign = [];
     for (let i = 0; i < inboxes.length; i++) {
@@ -863,9 +863,10 @@ function acceptSosConfirm(sosId, userAcceptId) {
 
 // INBOX
 
-function getInboxTotal(type) {
+function getInboxTotal(userId, type) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT COUNT(*) AS total FROM inboxes WHERE type = '${type}'`
+    const query = `SELECT COUNT(*) AS total FROM inboxes WHERE user_id = '${userId}' 
+    AND type = '${type}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
