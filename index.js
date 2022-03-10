@@ -430,6 +430,7 @@ app.get("/get-fcm", async (req, res) => {
 app.get("/inbox/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
   let show = parseInt(req.query.show) || 10  
+  let type = req.query.type
   let offset  = (page - 1) * show
   let total = await getInboxTotal()
   let resultTotal = Math.ceil(total / show) 
@@ -439,7 +440,7 @@ app.get("/inbox/:user_id", async (req, res) => {
  
   try {
     let userId = req.params.user_id
-    let inboxes = await getInbox(offset, show, userId)
+    let inboxes = await getInbox(offset, show, userId, type)
     let inboxesAssign = [];
     for (let i = 0; i < inboxes.length; i++) {
       inboxesAssign.push({
@@ -888,9 +889,11 @@ function getInboxTotalUnread(userId) {
   })
 }
 
-function getInbox(offset, limit, userId) {
+function getInbox(offset, limit, userId, type) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM inboxes WHERE user_id='${userId}' ORDER BY id DESC LIMIT ${offset}, ${limit}`
+    const query = `SELECT * FROM inboxes WHERE user_id = '${userId}'
+    AND type = ${type}
+    ORDER BY id DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
