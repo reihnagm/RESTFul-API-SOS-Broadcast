@@ -432,7 +432,7 @@ app.get("/inbox/:user_id", async (req, res) => {
   let show = parseInt(req.query.show) || 10  
   let type = req.query.type
   let offset  = (page - 1) * show
-  let total = await getInboxTotal()
+  let total = await getInboxTotal(type)
   let resultTotal = Math.ceil(total / show) 
   let perPage = Math.ceil(resultTotal / show) 
   let prevPage = page === 1 ? 1 : page - 1
@@ -863,9 +863,9 @@ function acceptSosConfirm(sosId, userAcceptId) {
 
 // INBOX
 
-function getInboxTotal() {
+function getInboxTotal(type) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT COUNT(*) AS total FROM inboxes`
+    const query = `SELECT COUNT(*) AS total FROM inboxes WHERE type = '${type}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
