@@ -892,7 +892,7 @@ function getInboxTotalUnread(userId) {
 function getInbox(offset, limit, userId, type) {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM inboxes WHERE user_id = '${userId}'
-    AND type = ${type}
+    AND type = '${type}'
     ORDER BY id DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
