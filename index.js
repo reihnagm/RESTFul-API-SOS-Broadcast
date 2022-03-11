@@ -229,9 +229,9 @@ app.put("/accept-sos", async (req, res) => {
   try {
     let sosId = req.body.sos_id
     let userAcceptId = req.body.user_accept_id
-    let lng = req.body.lng
     let lat = req.body.lat
-    let affected = await acceptSosConfirm(sosId, userAcceptId, lng, lat)
+    let lng = req.body.lng
+    let affected = await acceptSosConfirm(sosId, userAcceptId, lat, lng)
     if(affected > 0) {
       return res.json({
         "status": res.statusCode
@@ -670,22 +670,22 @@ function getSosTotal() {
   })
 }
 
-function checkSosAgentProcess() {
-  return new Promise((resolve, reject) => {
-    const query = `SELECT a.* FROM users a
-    JOIN sos_confirms b
-    ON a.user_id = b.user_accept_id
-    WHERE is_confirm NOT IN (SELECT is_confirm FROM sos_confirms WHERE is_confirm = 1)
-    AND a.role = "agent`
-    conn.query(query, (e, res) => {
-      if(e) {
-        reject(new Error(e))
-      } else {
-        resolve(res)
-      }
-    })
-  })
-}
+// function checkSosAgentProcess() {
+//   return new Promise((resolve, reject) => {
+//     const query = `SELECT a.* FROM users a
+//     JOIN sos_confirms b
+//     ON a.user_id = b.user_accept_id
+//     WHERE is_confirm NOT IN (SELECT is_confirm FROM sos_confirms WHERE is_confirm = 1)
+//     AND a.role = "agent`
+//     conn.query(query, (e, res) => {
+//       if(e) {
+//         reject(new Error(e))
+//       } else {
+//         resolve(res)
+//       }
+//     })
+//   })
+// }
 
 function storeSos(uid, category, media_url, media_url_phone, content, status, lat, lng, address, duration, thumbnail, userId, signId) {
   return new Promise((resolve, reject) => {
@@ -849,7 +849,7 @@ function finishSosConfirm(sosId, userAcceptId) {
 
 function acceptSosConfirm(sosId, userAcceptId, lat, lng) {
   return new Promise((resolve, reject) => {
-    const query = `UPDATE sos_confirms SET is_confirm = 1, lat = '${lat}', lng = '${lng}' user_accept_id = '${userAcceptId}' 
+    const query = `UPDATE sos_confirms SET is_confirm = 1, lat = '${lat}', lng = '${lng}', user_accept_id = '${userAcceptId}' 
     WHERE sos_uid = '${sosId}' 
     AND is_confirm = '0'`
     conn.query(query, (e, res) => {
