@@ -229,7 +229,9 @@ app.put("/accept-sos", async (req, res) => {
   try {
     let sosId = req.body.sos_id
     let userAcceptId = req.body.user_accept_id
-    let affected = await acceptSosConfirm(sosId, userAcceptId)
+    let lng = req.body.lng
+    let lat = req.body.lat
+    let affected = await acceptSosConfirm(sosId, userAcceptId, lng, lat)
     if(affected > 0) {
       return res.json({
         "status": res.statusCode
@@ -845,9 +847,9 @@ function finishSosConfirm(sosId, userAcceptId) {
   })
 }
 
-function acceptSosConfirm(sosId, userAcceptId) {
+function acceptSosConfirm(sosId, userAcceptId, lat, lng) {
   return new Promise((resolve, reject) => {
-    const query = `UPDATE sos_confirms SET is_confirm = 1, user_accept_id = '${userAcceptId}' 
+    const query = `UPDATE sos_confirms SET is_confirm = 1, lat = '${lat}', lng = '${lng}' user_accept_id = '${userAcceptId}' 
     WHERE sos_uid = '${sosId}' 
     AND is_confirm = '0'`
     conn.query(query, (e, res) => {
