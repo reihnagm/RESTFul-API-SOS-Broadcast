@@ -818,7 +818,7 @@ function getHistoryAgentSosTotal(userId) {
 
 function getAgentOngoing(userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.sign_id, sc1.as_name, a.media_url, a.media_url_phone, us.fullname agent_name, sc1.lat agent_lat, sc1.lng agent_lng FROM sos a 
+    const query = `SELECT a.sign_id, sc1.as_name, a.thumbnail, a.media_url, a.media_url_phone, us.fullname agent_name, sc1.lat agent_lat, sc1.lng agent_lng FROM sos a 
     INNER JOIN users u 
     ON a.user_id = u.user_id 
     INNER JOIN sos_confirms sc1
