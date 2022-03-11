@@ -132,6 +132,8 @@ app.get("/get-agent-ongoing/:user_id", async (req, res) => {
     for (let i = 0; i < data.length; i++) {
       arr.sign_id = data[i].sign_id
       arr.as_name = data[i].as_name
+      arr.media_url = data[i].media_url
+      arr.media_url_phone = data[i].media_url_phone
       arr.name = data[i].agent_name
       arr.lat = data[i].agent_lat
       arr.lng = data[i].agent_lng     
@@ -816,7 +818,7 @@ function getHistoryAgentSosTotal(userId) {
 
 function getAgentOngoing(userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.sign_id, a.as_name, us.fullname agent_name, sc1.lat agent_lat, sc1.lng agent_lng FROM sos a 
+    const query = `SELECT a.sign_id, sc1.as_name, a.media_url, a.media_url_phone, us.fullname agent_name, sc1.lat agent_lat, sc1.lng agent_lng FROM sos a 
     INNER JOIN users u 
     ON a.user_id = u.user_id 
     INNER JOIN sos_confirms sc1
@@ -825,6 +827,7 @@ function getAgentOngoing(userId) {
     ON us.user_id = sc1.user_accept_id    
     WHERE a.user_id = '${userId}'
     AND sc1.is_confirm = 1`
+    console.log(query)
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
