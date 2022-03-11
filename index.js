@@ -997,7 +997,8 @@ function getFcm() {
     const query = `SELECT a.*, b.role, IFNULL(b.fullname, '-') fullname 
     FROM fcm a LEFT JOIN users b 
     ON a.uid = b.user_id
-    WHERE a.uid NOT IN (SELECT sc.user_accept_id FROM sos_confirms sc WHERE sc.is_confirm = 1)`
+    WHERE a.uid NOT IN (SELECT sc.user_accept_id FROM sos_confirms sc WHERE sc.is_confirm = 1)
+    AND b.role = 'agent'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
