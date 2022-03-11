@@ -133,6 +133,7 @@ app.get("/get-agent-ongoing/:user_id", async (req, res) => {
       arr.sign_id = data[i].sign_id
       arr.as_name = data[i].as_name
       arr.media_url = data[i].media_url
+      arr.thumbnail = data[i].thumbnail
       arr.media_url_phone = data[i].media_url_phone
       arr.name = data[i].agent_name
       arr.lat = data[i].agent_lat
