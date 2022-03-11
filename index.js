@@ -124,6 +124,27 @@ app.get("/get-agent-sos/:user_id", async (req, res) => {
   }
 })
 
+app.get("/get-agent-ongoing/:user_id", async (req, res) => {
+  try {
+    let userId = req.params.user_id
+    let data = await getAgentOngoing(userId)
+    let arr = {}
+    for (let i = 0; i < data.length; i++) {
+      arr.sign_id = data[i].sign_id
+      arr.name = data[i].agent_name
+      arr.lat = data[i].agent_lat
+      arr.lng = data[i].agent_lng     
+    }
+    return res.json({
+      "data":{
+        "agent": arr 
+      } 
+    })
+  } catch(e) {
+    console.log(e)
+  }
+})
+
 app.get("/get-history-agent-sos/:user_accept_id", async (req, res) => {
   try {
     let page = parseInt(req.query.page) || 1
@@ -787,6 +808,27 @@ function getHistoryAgentSosTotal(userId) {
         reject(new Error(e))
       } else {  
         resolve(res[0].total)
+      }
+    })
+  })
+}
+
+function getAgentOngoing(userId) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT a.sign_id, us.fullname agent_name, sc1.lat agent_lat, sc1.lng agent_lng FROM sos a 
+    INNER JOIN users u 
+    ON a.user_id = u.user_id 
+    INNER JOIN sos_confirms sc1
+    ON a.uid = sc1.sos_uid 
+    INNER JOIN users us 
+    ON us.user_id = sc1.user_accept_id    
+    WHERE a.user_id = '${userId}'
+    AND sc1.is_confirm = 1`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e)) 
+      } else {
+        resolve(res)
       }
     })
   })
