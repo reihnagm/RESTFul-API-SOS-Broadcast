@@ -124,25 +124,56 @@ app.get("/get-agent-sos/:user_id", async (req, res) => {
   }
 })
 
+app.get("/check-agent-ongoing/:user_id", async(req, res) => {
+  try {
+    let userId = req.params.user_id
+    let data = await checkAgentOngoing(userId)
+    if(data == 1) {
+      return res.json({
+        "status": res.statusCode,
+        "data": "exist"
+      })
+    } else {
+      return res.json({
+        "status": res.statusCode,
+        "data": "not_exist"
+      })
+    }
+  } catch(e) { 
+    console.log(e)
+  }
+})
+
 app.get("/get-agent-ongoing/:user_id", async (req, res) => {
   try {
     let userId = req.params.user_id
     let data = await getAgentOngoing(userId)
-    let arr = {}
-    for (let i = 0; i < data.length; i++) {
-      arr.sign_id = data[i].sign_id
-      arr.as_name = data[i].as_name
-      arr.media_url = data[i].media_url
-      arr.thumbnail = data[i].thumbnail
-      arr.media_url_phone = data[i].media_url_phone
-      arr.name = data[i].agent_name
-      arr.lat = data[i].agent_lat
-      arr.lng = data[i].agent_lng     
-    }
+    if(data == null) return res.json({
+      "data":{
+        "agent": "not_available" 
+      },
+      "status": res.statusCode
+    }) 
+    const response = await axios.get(`https://maps.googleapis.com/maps/api/directions/json?origin=${data.sender_lat},${data.sender_lng}&destination=${data.agent_lat},${data.agent_lng}&key=AIzaSyBFRpXPf8BXaR22nDvvx2ghBfbUbGGX8N8`)  
+    const d = response.data
+    let agentObj = {}
+    agentObj.sign_id = data.sign_id
+    agentObj.as_name = data.as_name
+    agentObj.media_url = data.media_url
+    agentObj.thumbnail = data.thumbnail
+    agentObj.media_url_phone = data.media_url_phone
+    agentObj.name = data.agent_name
+    agentObj.agent_lat = data.agent_lat
+    agentObj.agent_lng = data.agent_lng   
+    agentObj.sender_lat = data.sender_lat
+    agentObj.sender_lng = data.sender_lng     
+    agentObj.est = `${d.routes[0].legs[0].distance.text} ${d.routes[0].legs[0].duration.text}`
+
     return res.json({
       "data":{
-        "agent": arr 
-      } 
+        "agent": agentObj 
+      },
+      "status": res.statusCode 
     })
   } catch(e) {
     console.log(e)
@@ -817,23 +848,43 @@ function getHistoryAgentSosTotal(userId) {
   })
 }
 
+function checkAgentOngoing(userId) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT COUNT(*) AS total FROM users a
+    WHERE a.user_id IN (SELECT sc.user_accept_id FROM sos_confirms sc 
+    WHERE sc.is_confirm = 1 AND sc.user_sender_id = '${userId}')`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e)) 
+      } else {
+        resolve(res[0].total)
+      }
+    })
+  })
+}
+
 function getAgentOngoing(userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT a.sign_id, sc1.as_name, a.thumbnail, a.media_url, a.media_url_phone, us.fullname agent_name, sc1.lat agent_lat, sc1.lng agent_lng FROM sos a 
+    const query = `SELECT a.sign_id, f2.lat sender_lat, f2.lng sender_lng, sc1.as_name, a.thumbnail, a.media_url, a.media_url_phone, us.fullname agent_name, 
+    f1.lat agent_lat, f1.lng agent_lng 
+    FROM sos a 
     INNER JOIN users u 
     ON a.user_id = u.user_id 
     INNER JOIN sos_confirms sc1
     ON a.uid = sc1.sos_uid 
     INNER JOIN users us 
-    ON us.user_id = sc1.user_accept_id    
+    ON us.user_id = sc1.user_accept_id 
+    INNER JOIN fcm f1 
+    ON us.user_id = f1.uid
+    INNER JOIN fcm f2
+    ON a.user_id = f2.uid 
     WHERE a.user_id = '${userId}'
     AND sc1.is_confirm = 1`
-    console.log(query)
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
       } else {
-        resolve(res)
+        resolve(res[0])
       }
     })
   })
