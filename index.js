@@ -167,7 +167,7 @@ app.get("/get-agent-ongoing/:user_id", async (req, res) => {
     agentObj.agent_lng = data.agent_lng   
     agentObj.sender_lat = data.sender_lat
     agentObj.sender_lng = data.sender_lng     
-    agentObj.est = `${d.routes[0].legs[0].distance.text} ${d.routes[0].legs[0].duration.text}`
+    agentObj.est = `${d.routes[0].legs[0].distance.text} / ${d.routes[0].legs[0].duration.text}`
 
     return res.json({
       "data":{
