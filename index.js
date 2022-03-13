@@ -661,6 +661,8 @@ function getSos(offset, limit, userId) {
     a.content, 
     a.lat, 
     a.lng, 
+    sc.lat agent_lat,
+    sc.lng agnet_lng,
     a.address, 
     a.status, 
     a.duration, 
@@ -670,6 +672,7 @@ function getSos(offset, limit, userId) {
     b.phone_number
     FROM sos a 
     INNER JOIN users b ON a.user_id = b.user_id 
+    INNER JOIN sos_confirfms sc ON a.uid = sc.sos_uid
     WHERE a.user_id = '${userId}'
     ORDER BY a.created_at DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
