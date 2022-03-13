@@ -338,8 +338,10 @@ app.get("/get-sos/:user_id", async (req, res) => {
           "thumbnail": sos[i]["thumbnail"],
           "sign_id": sos[i]["sign_id"],
           "content": sos[i]["content"],
-          "lat": sos[i]["lat"],
-          "lng": sos[i]["lng"],
+          "lat_sender": sos[i]["lat_sender"],
+          "lng_sender": sos[i]["lng_sender"],
+          "lat_agent": sos[i]["lat_agent"],
+          "lng_agent": sos[i]["lng_agent"],
           "address": sos[i]["address"],
           "status": sos[i]["status"],
           "duration": sos[i]["duration"],
@@ -374,8 +376,10 @@ app.get("/get-sos/:user_id", async (req, res) => {
         "thumbnail": sos[i]["thumbnail"],
         "sign_id": sos[i]["sign_id"],
         "content": sos[i]["content"],
-        "lat": sos[i]["lat"],
-        "lng": sos[i]["lng"],
+        "lat_sender": sos[i]["lat_sender"],
+        "lng_sender": sos[i]["lng_sender"],
+        "lat_agent": sos[i]["lat_agent"],
+        "lng_agent": sos[i]["lng_agent"],
         "address": sos[i]["address"],
         "status": sos[i]["status"],
         "duration": sos[i]["duration"],
@@ -659,10 +663,10 @@ function getSos(offset, limit, userId) {
     a.thumbnail,
     a.sign_id, 
     a.content, 
-    a.lat, 
-    a.lng, 
-    sc.lat agent_lat,
-    sc.lng agnet_lng,
+    a.lat lat_sender, 
+    a.lng lng_sender, 
+    IFNULL(sc.lat, '-') lat_agent,
+    IFNULL(sc.lng, '-') lng_agent,
     a.address, 
     a.status, 
     a.duration, 
@@ -672,7 +676,7 @@ function getSos(offset, limit, userId) {
     b.phone_number
     FROM sos a 
     INNER JOIN users b ON a.user_id = b.user_id 
-    INNER JOIN sos_confirfms sc ON a.uid = sc.sos_uid
+    INNER JOIN sos_confirms sc ON a.uid = sc.sos_uid
     WHERE a.user_id = '${userId}'
     ORDER BY a.created_at DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
@@ -694,8 +698,10 @@ function getAllSos(offset, limit) {
     a.thumbnail, 
     a.sign_id,
     a.content, 
-    a.lat, 
-    a.lng, 
+    a.lat lat_sender, 
+    a.lng lng_sender, 
+    IFNULL(sc.lat, '-') lat_agent,
+    IFNULL(sc.lng, '-') lng_agent,
     a.address, 
     a.status, 
     a.duration, 
@@ -705,6 +711,7 @@ function getAllSos(offset, limit) {
     b.phone_number
     FROM sos a 
     INNER JOIN users b ON a.user_id = b.user_id 
+    INNER JOIN sos_confirms sc ON a.uid = sc.sos_uid
     ORDER BY a.created_at DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
