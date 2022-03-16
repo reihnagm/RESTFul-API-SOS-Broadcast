@@ -380,6 +380,7 @@ app.get("/get-sos/:user_id", async (req, res) => {
         "lng_sender": sos[i]["lng_sender"],
         "lat_agent": sos[i]["lat_agent"],
         "lng_agent": sos[i]["lng_agent"],
+        "name_agent": sos[i]["agent_name"],
         "address": sos[i]["address"],
         "status": sos[i]["status"],
         "duration": sos[i]["duration"],
@@ -676,7 +677,7 @@ function getSos(offset, limit, userId) {
     b.phone_number
     FROM sos a 
     INNER JOIN users b ON a.user_id = b.user_id 
-    INNER JOIN sos_confirms sc ON a.uid = sc.sos_uid
+    INNER JOIN sos_confirms sc ON a.uid = sc.sos_uid 
     WHERE a.user_id = '${userId}'
     ORDER BY a.created_at DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
@@ -702,6 +703,7 @@ function getAllSos(offset, limit) {
     a.lng lng_sender, 
     IFNULL(sc.lat, '-') lat_agent,
     IFNULL(sc.lng, '-') lng_agent,
+    u.fullname agent_name,
     a.address, 
     a.status, 
     a.duration, 
@@ -712,6 +714,7 @@ function getAllSos(offset, limit) {
     FROM sos a 
     INNER JOIN users b ON a.user_id = b.user_id 
     INNER JOIN sos_confirms sc ON a.uid = sc.sos_uid
+    INNER JOIN users u ON sc.user_accept_id = u.user_id
     ORDER BY a.created_at DESC LIMIT ${offset}, ${limit}`
     conn.query(query, (e, res) => {
       if(e) {
