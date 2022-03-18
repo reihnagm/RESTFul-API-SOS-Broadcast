@@ -704,6 +704,7 @@ function getAllSos(offset, limit) {
     IFNULL(sc.lat, '-') lat_agent,
     IFNULL(sc.lng, '-') lng_agent,
     u.fullname agent_name,
+    u.address agent_address,
     a.address, 
     a.status, 
     a.duration, 
