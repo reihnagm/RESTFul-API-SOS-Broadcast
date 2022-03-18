@@ -29,11 +29,11 @@ const upload = multer({
 })
 
 let conn = mysql.createConnection({
-  host:'68.183.234.187',
+  host:'167.99.76.66',
   user:'root',
   port: '3307',
   password:'cx2021!',
-  database: 'sos'
+  database: 'amulet'
 })
 
 conn.connect(function(e) {
