@@ -381,6 +381,7 @@ app.get("/get-sos/:user_id", async (req, res) => {
         "lat_agent": sos[i]["lat_agent"],
         "lng_agent": sos[i]["lng_agent"],
         "name_agent": sos[i]["agent_name"],
+        "address_agent": sos[i]["agent_address"],
         "address": sos[i]["address"],
         "status": sos[i]["status"],
         "duration": sos[i]["duration"],
