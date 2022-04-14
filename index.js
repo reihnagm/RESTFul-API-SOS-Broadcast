@@ -653,6 +653,13 @@ app.post("/upload-thumbnail", upload.single("thumbnail"), (req, res) => {
   }
 })
 
+// PRIVACY & POLICY
+
+app.get("/privacy-policy", (req, res) => {
+  res.writeHead(302, {Location: "https://pages.flycricket.io/amulet/privacy.html"})
+  res.end()
+})
+
 
 // SOS
 
@@ -740,7 +747,6 @@ function getSosTotal() {
     })
   })
 }
-
 // function checkSosAgentProcess() {
 //   return new Promise((resolve, reject) => {
 //     const query = `SELECT a.* FROM users a
