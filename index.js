@@ -116,8 +116,8 @@ app.get("/get-agent-sos/:user_id", async (req, res) => {
       "nextPage": nextPage,
       "prevPage": prevPage,
       "currentPage": page,
-      "nextUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
-      "prevUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
+      "nextUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
+      "prevUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
     })
   } catch(e) {
     console.log(e)
@@ -222,8 +222,8 @@ app.get("/get-history-agent-sos/:user_accept_id", async (req, res) => {
       "nextPage": nextPage,
       "prevPage": prevPage,
       "currentPage": page,
-      "nextUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
-      "prevUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
+      "nextUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
+      "prevUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
     })
   } catch(e) {
     console.log(e)
@@ -273,8 +273,8 @@ app.get("/get-history-sos/:is_confirm/:user_id", async (req, res) => {
       "nextPage": nextPage,
       "prevPage": prevPage,
       "currentPage": page,
-      "nextUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
-      "prevUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
+      "nextUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
+      "prevUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
     })
   } catch(e) {
     console.log(e)
@@ -358,8 +358,8 @@ app.get("/get-sos/:user_id", async (req, res) => {
         "nextPage": nextPage,
         "prevPage": prevPage,
         "currentPage": page,
-        "nextUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
-        "prevUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
+        "nextUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
+        "prevUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
       })
     } catch(e) {
       console.log(e)
@@ -398,8 +398,8 @@ app.get("/get-sos/:user_id", async (req, res) => {
       "nextPage": nextPage,
       "prevPage": prevPage,
       "currentPage": page,
-      "nextUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
-      "prevUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
+      "nextUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
+      "prevUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
     })
   }
 })
@@ -526,8 +526,8 @@ app.get("/inbox/:user_id", async (req, res) => {
       "nextPage": nextPage,
       "prevPage": prevPage,
       "currentPage": page,
-      "nextUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
-      "prevUrl": `http://cxid.xyz:3000${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
+      "nextUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + nextPage)}`,
+      "prevUrl": `https://api-amulet-nodejs.inovasi78.com${req.originalUrl.replace('page=' + page, 'page=' + prevPage)}`,
     })
   } catch(e) {
     console.log(e)
@@ -630,7 +630,7 @@ app.post("/upload", upload.single("video"), (req, res) => {
   if(req.file) {
     filename = req.file.originalname
     res.json({
-      "url": `http://cxid.xyz:3000/videos/${filename}`
+      "url": `https://api-amulet-nodejs.inovasi78.com/videos/${filename}`
     })
   } else {
     res.json({
@@ -644,7 +644,7 @@ app.post("/upload-thumbnail", upload.single("thumbnail"), (req, res) => {
   if(req.file) {
     filename = req.file.originalname
     res.json({
-      "url": `http://cxid.xyz:3000/videos/${filename}`
+      "url": `https://api-amulet-nodejs.inovasi78.com/videos/${filename}`
     })
   } else {
     res.json({
