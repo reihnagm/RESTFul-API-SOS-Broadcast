@@ -8,6 +8,7 @@ const mysql = require("mysql")
 const helmet = require("helmet")
 const compression = require("compression")
 const multer = require("multer")
+const { allowedNodeEnvironmentFlags } = require("process")
 const server = require("http").createServer(app)
 const io = require("socket.io")(server)
 
@@ -315,6 +316,17 @@ app.put("/finish-sos", async (req, res) => {
   }
 })
 
+app.delete("/check-sos", async (req, res) => {
+  try {
+    await checkSos()
+    return res.json({
+      "status": res.statusCode
+    })
+  } catch(e) {
+    console.log(e)
+  }
+})
+
 app.get("/get-sos/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
   let show = parseInt(req.query.show) || 10  
@@ -435,7 +447,7 @@ app.post("/store-sos", async (req, res) => {
       console.log(e)
     }
 
-    const contacts = await getContact(userId)
+    const contacts = await getContacts(userId)
 
     if(contacts.length != 0) {
       for (let i = 0; i < contacts.length; i++) {
@@ -596,7 +608,7 @@ app.put("/inbox/:uid/update", async (req, res) => {
 
 app.get("/contacts/:user_id", async (req, res) => {
   let userId = req.params.user_id
-  let data = await getContact(userId)
+  let data = await getContacts(userId)
   res.json({
     "data": data
   })
@@ -747,22 +759,6 @@ function getSosTotal() {
     })
   })
 }
-// function checkSosAgentProcess() {
-//   return new Promise((resolve, reject) => {
-//     const query = `SELECT a.* FROM users a
-//     JOIN sos_confirms b
-//     ON a.user_id = b.user_accept_id
-//     WHERE is_confirm NOT IN (SELECT is_confirm FROM sos_confirms WHERE is_confirm = 1)
-//     AND a.role = "agent`
-//     conn.query(query, (e, res) => {
-//       if(e) {
-//         reject(new Error(e))
-//       } else {
-//         resolve(res)
-//       }
-//     })
-//   })
-// }
 
 function storeSos(uid, category, media_url, media_url_phone, content, status, lat, lng, address, duration, thumbnail, userId, signId) {
   return new Promise((resolve, reject) => {
@@ -787,6 +783,20 @@ function storeSosConfirm(sosId, userId) {
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e)) 
+      } else {
+        resolve(res)
+      }
+    })
+  })
+}
+
+function checkSos() {
+  return  new Promise((resolve, reject) => {
+    const query = `DELETE FROM sos_confirms WHERE created_at <= DATE_SUB(NOW(), INTERVAL 1 HOUR) 
+    AND is_confirm = 0`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
       } else {
         resolve(res)
       }
@@ -1069,7 +1079,7 @@ function inboxUpdate(uid) {
 
 // CONTACTS
 
-function getContact(userId) {
+function getContacts(userId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM contacts WHERE user_id = '${userId}'`
     conn.query(query, (e, res) => {
