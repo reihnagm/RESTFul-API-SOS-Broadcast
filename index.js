@@ -443,7 +443,7 @@ app.post("/store-sos", async (req, res) => {
           duration, thumbnail, userId, signId
         ),
         storeSosConfirm(id, userId),
-        getContacts(userId).then((contacts) => {
+        getContacts(userId).then(async (contacts) => {
           if(contacts.length != 0) {
             for (let i = 0; i < contacts.length; i++) {
               try {
