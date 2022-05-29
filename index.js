@@ -418,6 +418,7 @@ app.get("/get-sos/:user_id", async (req, res) => {
 
 app.post("/store-sos", async (req, res) => {
   try {
+
     let id = req.body.id 
     let signId = req.body.sign_id
     let category = req.body.category
@@ -432,39 +433,38 @@ app.post("/store-sos", async (req, res) => {
     let thumbnail = req.body.thumbnail
     let userName = req.body.username
     let userId = req.body.user_id
-    
-
-    await storeSos(
-      id, category, media_url, media_url_phone, 
-      desc, status, 
-      lat, lng, address,
-      duration, thumbnail, userId, signId
-    )
 
     try {
-      await storeSosConfirm(id, userId)
+      await Promise.all([
+        storeSos(
+          id, category, media_url, media_url_phone, 
+          desc, status, 
+          lat, lng, address,
+          duration, thumbnail, userId, signId
+        ),
+        storeSosConfirm(id, userId),
+        getContacts(userId).then((contacts) => {
+          if(contacts.length != 0) {
+            for (let i = 0; i < contacts.length; i++) {
+              try {
+                await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
+                  userkey: '0d88a7bc9d71',
+                  passkey: 'df96c6b94cab1f0f2cc136b6',
+                  link: media_url,
+                  caption:`${userName} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \nhttps://www.google.com/maps/search/?api=1&query=${lat},${lng} \n- Amulet`,
+                  to: contacts[i].identifier
+                })  
+              } catch(e) {
+                console.log(e)
+              }
+            }
+          }
+        })
+      ])
     } catch(e) {
       console.log(e)
     }
-
-    const contacts = await getContacts(userId)
-
-    if(contacts.length != 0) {
-      for (let i = 0; i < contacts.length; i++) {
-        try {
-          await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
-            userkey: '0d88a7bc9d71',
-            passkey: 'df96c6b94cab1f0f2cc136b6',
-            link: media_url,
-            caption:`${userName} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \nhttps://www.google.com/maps/search/?api=1&query=${lat},${lng} \n- Amulet`,
-            to: contacts[i].identifier
-          })  
-        } catch(e) {
-          console.log(e)
-        }
-      }
-    }
-
+    
     return res.json({
       "status": res.statusCode
     })
