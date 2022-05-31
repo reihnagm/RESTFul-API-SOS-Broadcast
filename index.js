@@ -73,6 +73,27 @@ app.use(express.static("public"))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// Subscriptions
+
+app.get("/get-subscription/:user_id", async (req, res) => {
+  let userId = req.params.user_id
+  try {
+    let subscription = await getSubscription(userId)
+    return res.json({
+      "data": {
+        "subscription": {
+          "days": subscription.days,
+          "activated_date": moment(subscription.activated_date).format('MMMM Do YYYY'),
+          "exp_date": moment(subscription.exp_date).format('MMMM Do YYYY')
+        }
+      },
+      "status": res.statusCode
+    })
+  } catch(e) {
+    console.log(e)
+  }
+})
+
 // SOS
 
 app.get("/get-agent-sos/:user_id", async (req, res) => {
@@ -672,6 +693,21 @@ app.get("/privacy-policy", (req, res) => {
   res.end()
 })
 
+// SUBSCRIPTION
+
+function getSubscription(userId) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT activated_date, exp_date, days FROM subscriptions 
+    WHERE user_id = '${userId}'`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0])
+      }
+    })
+  })
+}
 
 // SOS
 
