@@ -1087,7 +1087,7 @@ function checkInbox(title) {
 
 function inboxStore(uid, title, content, thumbnail, mediaUrl, type, userId) {
   return new Promise((resolve, reject) => {
-    const query = `INSERT INTO inboxes (uid, title, content, thumbnail, media_url, is_read, type, user_id) 
+    const query = `REPLACE INTO inboxes (uid, title, content, thumbnail, media_url, is_read, type, user_id) 
     VALUES ('${uid}', '${title}', '${content}', '${thumbnail}', '${mediaUrl}', 0,
     '${type}' ,'${userId}')`
     conn.query(query, (e, res) => {
