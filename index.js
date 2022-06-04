@@ -577,7 +577,7 @@ app.get("/inbox/count/:user_id", async(req, res) => {
 
 app.post("/inbox/check", async(req, res) => {
   let title = req.body.title
-  let totalCheckInbox = await checkInbox(title)
+  let totalCheckInbox = await checkInboxByTitle(title)
   res.json({
     "total": totalCheckInbox 
   })
@@ -591,23 +591,27 @@ app.post("/inbox/store", async (req, res) => {
   let mediaUrl = req.body.media_url
   let type = req.body.type
   let userId = req.body.user_id
-  
-  let totalCheckInboxCount = await checkInbox(title)
 
-  if(type != "info") {
-    if(totalCheckInboxCount != 1) {
+  let inboxExist = await isInboxExist(uid)
+  if(inboxExist == 1) {
+    await inboxUpdateType(uid, type)
+  } else {
+    let totalCheckInboxCount = await checkInboxByTitle(title)
+    if(type != "info") {
+      if(totalCheckInboxCount != 1) {
+        await inboxStore(
+          uid, title, 
+          content, thumbnail, 
+          mediaUrl, type, userId
+        )
+      }
+    } else {
       await inboxStore(
         uid, title, 
         content, thumbnail, 
         mediaUrl, type, userId
       )
     }
-  } else {
-    await inboxStore(
-      uid, title, 
-      content, thumbnail, 
-      mediaUrl, type, userId
-    )
   }
 
   res.json({
@@ -1072,9 +1076,22 @@ function getInbox(offset, limit, userId, type) {
   })
 }
 
-function checkInbox(title) {
+function checkInboxByTitle(title) {
   return new Promise((resolve, reject) => {
     const query = `SELECT COUNT(*) AS total FROM inboxes WHERE title = '${title}'`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0].total)
+      }
+    })
+  })
+}
+
+function isInboxExist(uid) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT COUNT(*) AS total FROM inboxes WHERE uid = '${uid}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
@@ -1090,6 +1107,19 @@ function inboxStore(uid, title, content, thumbnail, mediaUrl, type, userId) {
     const query = `REPLACE INTO inboxes (uid, title, content, thumbnail, media_url, is_read, type, user_id) 
     VALUES ('${uid}', '${title}', '${content}', '${thumbnail}', '${mediaUrl}', 0,
     '${type}' ,'${userId}')`
+    conn.query(query, (e, res) => {
+      if(e) {
+        reject(new Error(e))
+      } else {
+        resolve(res[0])
+      }
+    })
+  })
+}
+
+function inboxUpdateType(uid, type) {
+  return new Promise((resolve, reject) => {
+    const query = `UPDATE inboxes SET type = '${type}' WHERE uid = '${uid}'`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
