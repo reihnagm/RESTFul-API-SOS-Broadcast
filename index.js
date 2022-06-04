@@ -592,26 +592,21 @@ app.post("/inbox/store", async (req, res) => {
   let type = req.body.type
   let userId = req.body.user_id
 
-  let inboxExist = await isInboxExist(uid)
-  if(inboxExist == 1) {
-    await inboxUpdateType(uid, type)
-  } else {
-    let totalCheckInboxCount = await checkInboxByTitle(title)
-    if(type != "info") {
-      if(totalCheckInboxCount != 1) {
-        await inboxStore(
-          uid, title, 
-          content, thumbnail, 
-          mediaUrl, type, userId
-        )
-      }
-    } else {
+  let totalCheckInboxCount = await checkInboxByTitle(title)
+  if(type != "info") {
+    if(totalCheckInboxCount != 1) {
       await inboxStore(
         uid, title, 
         content, thumbnail, 
         mediaUrl, type, userId
       )
     }
+  } else {
+    await inboxStore(
+      uid, title, 
+      content, thumbnail, 
+      mediaUrl, type, userId
+    )
   }
 
   res.json({
