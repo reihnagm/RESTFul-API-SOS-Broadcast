@@ -81,7 +81,13 @@ app.get("/get-subscription/:user_id", async (req, res) => {
     let subscription = await getSubscription(userId)
     if(subscription.length == 0) {
       return res.json({
-        "data": {},
+        "data": {
+          "subscription": {
+            "days": "",
+            "activated_date": "",
+            "exp_date": ""
+          }
+        },
         "status": res.statusCode
       })
     } else {
