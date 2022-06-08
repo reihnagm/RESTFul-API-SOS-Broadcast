@@ -85,7 +85,8 @@ app.get("/get-subscription/:user_id", async (req, res) => {
           "subscription": {
             "days": "",
             "activated_date": "",
-            "exp_date": ""
+            "exp_date": "",
+            "active": ""
           }
         },
         "status": res.statusCode
@@ -96,7 +97,8 @@ app.get("/get-subscription/:user_id", async (req, res) => {
           "subscription": {
             "days": subscription.days,
             "activated_date": moment(subscription.activated_date).format('MMMM Do YYYY'),
-            "exp_date": moment(subscription.exp_date).format('MMMM Do YYYY')
+            "exp_date": moment(subscription.exp_date).format('MMMM Do YYYY'),
+            "active": ""
           }
         },
         "status": res.statusCode
@@ -703,8 +705,10 @@ app.get("/privacy-policy", (req, res) => {
 
 function getSubscription(userId) {
   return new Promise((resolve, reject) => {
-    const query = `SELECT activated_date, exp_date, days FROM subscriptions 
-    WHERE user_id = '${userId}'`
+    const query = `SELECT b.status, a.activated_date, a.exp_date, a.days 
+      FROM subscriptions a
+      WHERE a.user_id = '${userId}'
+      INNER JOIN users b ON a.user_id = b.user_id`
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
