@@ -79,16 +79,23 @@ app.get("/get-subscription/:user_id", async (req, res) => {
   let userId = req.params.user_id
   try {
     let subscription = await getSubscription(userId)
-    return res.json({
-      "data": {
-        "subscription": {
-          "days": subscription.days,
-          "activated_date": moment(subscription.activated_date).format('MMMM Do YYYY'),
-          "exp_date": moment(subscription.exp_date).format('MMMM Do YYYY')
-        }
-      },
-      "status": res.statusCode
-    })
+    if(subscription.length == 0) {
+      return res.json({
+        "data": {},
+        "status": res.statusCode
+      })
+    } else {
+      return res.json({
+        "data": {
+          "subscription": {
+            "days": subscription.days,
+            "activated_date": moment(subscription.activated_date).format('MMMM Do YYYY'),
+            "exp_date": moment(subscription.exp_date).format('MMMM Do YYYY')
+          }
+        },
+        "status": res.statusCode
+      })
+    }
   } catch(e) {
     console.log(e)
   }
@@ -438,61 +445,55 @@ app.get("/get-sos/:user_id", async (req, res) => {
 })
 
 app.post("/store-sos", async (req, res) => {
+  let id = req.body.id 
+  let signId = req.body.sign_id
+  let category = req.body.category
+  let media_url = req.body.media_url
+  let media_url_phone = req.body.media_url_phone
+  let desc = req.body.desc
+  let lat = req.body.lat
+  let lng = req.body.lng
+  let address = req.body.address
+  let status = req.body.status
+  let duration = req.body.duration
+  let thumbnail = req.body.thumbnail
+  let userName = req.body.username
+  let userId = req.body.user_id
+
   try {
-
-    let id = req.body.id 
-    let signId = req.body.sign_id
-    let category = req.body.category
-    let media_url = req.body.media_url
-    let media_url_phone = req.body.media_url_phone
-    let desc = req.body.desc
-    let lat = req.body.lat
-    let lng = req.body.lng
-    let address = req.body.address
-    let status = req.body.status
-    let duration = req.body.duration
-    let thumbnail = req.body.thumbnail
-    let userName = req.body.username
-    let userId = req.body.user_id
-
-    try {
-      await Promise.all([
-        storeSos(
-          id, category, media_url, media_url_phone, 
-          desc, status, 
-          lat, lng, address,
-          duration, thumbnail, userId, signId
-        ),
-        storeSosConfirm(id, userId),
-        getContacts(userId).then(async (contacts) => {
-          if(contacts.length != 0) {
-            for (let i = 0; i < contacts.length; i++) {
-              try {
-                await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
-                  userkey: '0d88a7bc9d71',
-                  passkey: 'df96c6b94cab1f0f2cc136b6',
-                  link: media_url,
-                  caption:`${userName} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \nhttps://www.google.com/maps/search/?api=1&query=${lat},${lng} \n- Amulet`,
-                  to: contacts[i].identifier
-                })  
-              } catch(e) {
-                console.log(e)
-              }
+    await Promise.all([
+      storeSos(
+        id, category, media_url, media_url_phone, 
+        desc, status, 
+        lat, lng, address,
+        duration, thumbnail, userId, signId
+      ),
+      storeSosConfirm(id, userId),
+      getContacts(userId).then(async (contacts) => {
+        if(contacts.length != 0) {
+          for (let i = 0; i < contacts.length; i++) {
+            try {
+              await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
+                userkey: '0d88a7bc9d71',
+                passkey: 'df96c6b94cab1f0f2cc136b6',
+                link: media_url,
+                caption:`${userName} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \nhttps://www.google.com/maps/search/?api=1&query=${lat},${lng} \n- Amulet`,
+                to: contacts[i].identifier
+              })  
+            } catch(e) {
+              console.log(e)
             }
           }
-        })
-      ])
-    } catch(e) {
-      console.log(e)
-    }
-    
-    return res.json({
-      "status": res.statusCode
-    })
-    
+        }
+      })
+    ])
   } catch(e) {
     console.log(e)
   }
+  
+  return res.json({
+    "status": res.statusCode
+  })
 })
 
 // FCM
@@ -702,7 +703,7 @@ function getSubscription(userId) {
       if(e) {
         reject(new Error(e))
       } else {
-        resolve(res[0])
+        resolve(res)
       }
     })
   })
