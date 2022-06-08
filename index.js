@@ -95,10 +95,10 @@ app.get("/get-subscription/:user_id", async (req, res) => {
       return res.json({
         "data": {
           "subscription": {
-            "days": subscription.days,
-            "activated_date": moment(subscription.activated_date).format('MMMM Do YYYY'),
-            "exp_date": moment(subscription.exp_date).format('MMMM Do YYYY'),
-            "active": ""
+            "days": subscription[0].days,
+            "activated_date": moment(subscription[0].activated_date).format('MMMM Do YYYY'),
+            "exp_date": moment(subscription[0].exp_date).format('MMMM Do YYYY'),
+            "active": subscription[0].status == 0 ? false : true
           }
         },
         "status": res.statusCode
@@ -707,8 +707,9 @@ function getSubscription(userId) {
   return new Promise((resolve, reject) => {
     const query = `SELECT b.status, a.activated_date, a.exp_date, a.days 
       FROM subscriptions a
+      INNER JOIN users b ON a.user_id = b.user_id
       WHERE a.user_id = '${userId}'
-      INNER JOIN users b ON a.user_id = b.user_id`
+      `
     conn.query(query, (e, res) => {
       if(e) {
         reject(new Error(e))
