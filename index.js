@@ -535,7 +535,7 @@ app.get("/get-fcm", async (req, res) => {
 
 app.get("/inbox/:user_id", async (req, res) => {
   let page = parseInt(req.query.page) || 1
-  let show = parseInt(req.query.show) || 10  
+  let show = parseInt(req.query.show) || 100  
   let userId = req.params.user_id
   let type = req.query.type
   let offset  = (page - 1) * show
@@ -839,7 +839,8 @@ function storeSosConfirm(sosId, userId) {
 
 function checkSos() {
   return  new Promise((resolve, reject) => {
-    const query = `DELETE FROM sos_confirms WHERE created_at <= DATE_SUB(NOW(), INTERVAL 1 HOUR) 
+    const query = `DELETE FROM sos_confirms 
+    WHERE created_at <= DATE_SUB(NOW(), INTERVAL 1 HOUR) 
     AND is_confirm = 0`
     conn.query(query, (e, res) => {
       if(e) {
