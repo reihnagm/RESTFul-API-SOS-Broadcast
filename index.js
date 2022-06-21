@@ -1,6 +1,5 @@
 const express = require("express")
 const cors = require("cors")
-const { uuid } = require('uuidv4')
 const app = express()
 const axios = require("axios")
 const shortUrl = require("node-url-shortener")
@@ -495,7 +494,7 @@ app.post("/store-sos", async (req, res) => {
                   userkey: '0d88a7bc9d71',
                   passkey: 'df96c6b94cab1f0f2cc136b6',
                   to: contacts[i].identifier,
-                  message: `${userName} menjadikan nomor Anda ${contacts[i].identifier} (${contacts[i].name}) sebagai Kontak Darurat. Lihat di Maps \nhttps://www.google.com/maps/search/?api=1&query=${lat},${lng}\n Lihat video kejadian ${url} \n\n- Amulet (${uuid()})`            
+                  message: `${userName} menjadikan nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat. Lihat di Maps \nhttps://www.google.com/maps/search/?api=1&query=${lat},${lng}\n Lihat video kejadian ${url} \n\n- Amulet`            
                 }) 
               } catch(e) {
                 console.log(e)
