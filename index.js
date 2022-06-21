@@ -1,6 +1,7 @@
 const express = require("express")
 const cors = require("cors")
 const app = express()
+const { uuid } = require('uuidv4')
 const axios = require("axios")
 const shortUrl = require("node-url-shortener")
 const moment = require("moment")
@@ -73,6 +74,33 @@ app.use(compression())
 app.use(express.static("public"))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+app.get("/test", async (req, res) => {
+  let arr = [
+    {
+      phone: "085694891154", 
+      link: "https://feedapi.connexist.id:7443/d/f/amulet/c8kcc5vrosco9hifgip0.mp4"
+    },
+    {
+      phone: "089670558381",
+      link:  "https://feedapi.connexist.id:7443/d/f/amulet/c8kcc5vrosco9hifgip0.mp4"
+    }
+  ]
+  for (let index = 0; index < arr.length; index++) {
+    shortUrl.short(arr[index].link, async function (e, url) {
+      try {
+        await axios.post('https://console.zenziva.net/wareguler/api/sendWA/', {
+          userkey: '0d88a7bc9d71',
+          passkey: 'df96c6b94cab1f0f2cc136b6',
+          to: arr[index].phone,
+          message: `Reihan Agam (${uuid()}) menjadikan nomor Anda 089670558381 sebagai Kontak Darurat. Lihat di Maps \nhttps://www.google.com/maps/search/?api=1&query=0,0\n Lihat video kejadian ${url} \n\n- Amulet`            
+        }) 
+      } catch(e) {
+        console.log(e)
+      }
+    });
+  }
+})
 
 // Subscriptions
 
@@ -457,6 +485,7 @@ app.post("/store-sos", async (req, res) => {
   let id = req.body.id 
   let signId = req.body.sign_id
   let category = req.body.category
+  let shortlink = req.body.shortlink
   let media_url = req.body.media_url
   let media_url_phone = req.body.media_url_phone
   let desc = req.body.desc
@@ -481,25 +510,23 @@ app.post("/store-sos", async (req, res) => {
       getContacts(userId).then(async (contacts) => {
         if(contacts.length != 0) {
           for (let i = 0; i < contacts.length; i++) {
-            shortUrl.short(media_url, async function (err, url) {
-              try {
-                // await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
-                //   userkey: '0d88a7bc9d71',
-                //   passkey: 'df96c6b94cab1f0f2cc136b6',
-                //   link: url,
-                //   caption:`${userName} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \nhttps://www.google.com/maps/search/?api=1&query=${lat},${lng} \n- Amulet`,
-                //   to: contacts[i].identifier
-                // }) 
-                await axios.post('https://console.zenziva.net/wareguler/api/sendWA/', {
-                  userkey: '0d88a7bc9d71',
-                  passkey: 'df96c6b94cab1f0f2cc136b6',
-                  to: contacts[i].identifier,
-                  message: `${userName} menjadikan nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat. Lihat di Maps \nhttps://www.google.com/maps/search/?api=1&query=${lat},${lng}\n Lihat video kejadian ${url} \n\n- Amulet`            
-                }) 
-              } catch(e) {
-                console.log(e)
-              }
-            });
+            try {
+              // await axios.post('https://console.zenziva.net/wareguler/api/sendWAFile/', {
+              //   userkey: '0d88a7bc9d71',
+              //   passkey: 'df96c6b94cab1f0f2cc136b6',
+              //   link: url,
+              //   caption:`${userName} Menjadikan Nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat \nhttps://www.google.com/maps/search/?api=1&query=${lat},${lng} \n- Amulet`,
+              //   to: contacts[i].identifier
+              // }) 
+              await axios.post('https://console.zenziva.net/wareguler/api/sendWA/', {
+                userkey: '0d88a7bc9d71',
+                passkey: 'df96c6b94cab1f0f2cc136b6',
+                to: contacts[i].identifier,
+                message: `${userName} menjadikan nomor Anda ${contacts[i].identifier} sebagai Kontak Darurat. Lihat di Maps \nhttps://www.google.com/maps/search/?api=1&query=${lat},${lng}\n Lihat video kejadian ${shortlink} \n\n- Amulet`            
+              }) 
+            } catch(e) {
+              console.log(e)
+            }
           }
         }
       })
